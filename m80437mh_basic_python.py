@@ -20,6 +20,9 @@ def read_file():#(s)
 
     #Your code here
 
+    tempFile = open("text.txt", "r")
+    file_string = tempFile.read()
+
     return(file_string)#(s)
 
 # ---Section 2 --- #
@@ -36,6 +39,8 @@ def length_of_file():#(s)
 
     #Your code here
 
+    int_length_of_file = len(input_text)
+
     return(int_length_of_file)#(s)
 
 #(Question:b)
@@ -49,6 +54,11 @@ def if_apple():#(s)
     input_text = read_file()#(s)
 
     #Your code here
+
+    if "apple" in input_text or "APPLE" in input_text:
+        bool_if_apple = True
+    else:
+        bool_if_apple = False
 
     return (bool_if_apple)#(s)
 
@@ -64,6 +74,12 @@ def if_upper_case_exists():#(s)
 
     #Your code here
 
+    bool_if_upper_case_exist = False
+    for character in input_text:
+        ASCII_Value = ord(character)
+        if ASCII_Value >= 65 and ASCII_Value <= 90:
+            bool_if_upper_case_exist = True
+
     return (bool_if_upper_case_exist)#(s)
 
 #(Question:d)
@@ -77,6 +93,12 @@ def if_numbers_exist():#(s)
     input_text = read_file()#(s)
 
     #Your code here
+
+    bool_if_numbers_exist = False
+    for character in input_text:
+        ASCII_Value = ord(character)
+        if ASCII_Value >= 48 and ASCII_Value <= 57:
+            bool_if_numbers_exist = True
 
     return (bool_if_numbers_exist)#(s)
 
@@ -92,6 +114,11 @@ def if_spaces_exist():#(s)
 
     #Your code here
 
+    bool_if_spaces_exist = False
+    for character in input_text:
+        if character == " ":
+            bool_if_spaces_exist = True
+
     return (bool_if_spaces_exist)#(s)
 
 #(Question:f)
@@ -106,6 +133,12 @@ def if_first_letter_t():#(s)
 
     #Your code here
 
+    character = input_text[0]
+    if character == "t" or character == "T":
+        bool_if_first_letter_t = True
+    else:
+        bool_if_first_letter_t = False
+
     return (bool_if_first_letter_t)#(s)
 
 #(Question:g)
@@ -119,6 +152,21 @@ def fourth_letter_seventh_word():#(s)
     input_text = read_file()#(s)
 
     #Your code here
+
+    index = 0
+    character = input_text[index]
+    while character == " ": #ignore leading whitespace
+        index += 1
+        character = input_text[index]
+    
+    wordCount = 0
+    while wordCount < 6:
+        if character == " ":
+            wordCount += 1
+        index += 1
+        character = input_text[index]
+
+    string_fourth_letter_seventh_word = input_text[index+3]
 
     return (string_fourth_letter_seventh_word)#(s)
 
@@ -136,6 +184,8 @@ def convert_to_lower_case():#(s)
 
     #Your code here
 
+    string_lower_case_paragraph = input_text.lower()
+
     return (string_lower_case_paragraph)#(s)
 
 #(Question:b)
@@ -149,6 +199,13 @@ def reverse_paragraph():#(s)
     input_text = read_file()#(s)
 
     #Your code here
+
+    string_reversed_paragraph = ""
+    reverse_index = len(input_text) - 1
+
+    for index in range(len(input_text)):
+        string_reversed_paragraph += input_text[reverse_index]
+        reverse_index -= 1
 
     return (string_reversed_paragraph)#(s)
 
@@ -165,6 +222,8 @@ def duplicate_and_concatenate_paragraph():#(s)
 
     #Your code here
 
+    string_duplicated_paragraph = input_text + input_text
+
     return (string_duplicated_paragraph)#(s)
 
 #(Question:d)
@@ -180,9 +239,23 @@ def remove_whitespace_from_paragraph():#(s)
 
     #Your code here
 
+    string_clean_paragraph = input_text.strip()
+
     return (string_clean_paragraph)#(s)
 
 if __name__ == '__main__':#(s)
     #You can place any ad-hoc testing here
     #i.e test = remove_whitespace_from_paragraph()
     #i.e print(test)
+    print(read_file())
+    print(length_of_file())
+    print(if_apple())
+    print(if_upper_case_exists())
+    print(if_numbers_exist())
+    print(if_spaces_exist())
+    print(if_first_letter_t())
+    print(fourth_letter_seventh_word())
+    print(convert_to_lower_case())
+    print(reverse_paragraph())
+    print(duplicate_and_concatenate_paragraph())
+    print(remove_whitespace_from_paragraph())
