@@ -11,7 +11,7 @@ def configureWindow():
     window.attributes('-fullscreen', True)
 
 def homeSwap():
-    '''Swaps the displayed frame to the homepage.'''
+    '''Hides all frames currently displayed and display the home frame.'''
     settingsFrame.pack_forget()
     leaderboardFrame.pack_forget()
     infoFrame.pack_forget()
@@ -19,22 +19,22 @@ def homeSwap():
     homeFrame.pack(fill="both", expand=True)
 
 def settingsSwap():
-    '''Swaps the displayed frame to the settings page.'''
+    '''Hides the home frame and displays the settings frame.'''
     homeFrame.pack_forget()
     settingsFrame.pack(fill="both", expand=True)
 
 def leaderboardSwap():
-    '''Swaps the displayed frame to the leaderboard page.'''
+    '''Hides the home frame and displays the leaderboard frame.'''
     homeFrame.pack_forget()
     leaderboardFrame.pack(fill="both", expand=True)
 
 def infoSwap():
-    '''Swaps the displayed frame to the info page'''
+    '''Hides the home frame and displays the info frame.'''
     homeFrame.pack_forget()
     infoFrame.pack(fill="both", expand=True)
 
 def gameOverSwap():
-    '''Swaps the displayed frame to the game over page'''
+    '''Hides the game canvas and displays the game over screen.'''
     gameCanvas.pack_forget()
     gameOverFrame.pack(fill="both", expand=True)
 
@@ -54,7 +54,9 @@ def initialiseMenu():
     leaderboardBtn = Btn(homeFrame, width=20, height=1, text="Leaderboard", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=leaderboardSwap)
     infoBtn = Btn(homeFrame, width=20, height=1, text="How to Play", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=infoSwap)
     exitBtn = Btn(homeFrame, width=20, height=1, text="Exit", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=window.destroy)
-    settingsHomeBtn = Btn(settingsFrame, width=20, height=1, text="Home", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=homeSwap)
+    settingsHomeBtn = Btn(settingsFrame, width=25, height=1, text="Home", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=homeSwap)
+    bgBtn = Btn(settingsFrame, width=25, height=1, text="Change Background Colour", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=None)
+    bindsBtn = Btn(settingsFrame, width=25, height=1, text="Change Key Binds", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=None)
     leaderboardHomeBtn = Btn(leaderboardFrame, width=20, height=1, text="Home", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=homeSwap)
     infoHomeBtn = Btn(infoFrame, width=20, height=1, text="Home", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=homeSwap)
     gameOverHomeBtn = Btn(gameOverFrame, width=20, height=1, text="Home", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=homeSwap)
@@ -62,10 +64,10 @@ def initialiseMenu():
     # Create all labels
     logo = Image(file="Dodgems.png")
     homeLabel = Label(homeFrame, image=logo, highlightthickness=10)
-    settingsLabel = Label(settingsFrame, width=30, height=4, bg="#cbf7e6", text="SETTINGS", font=("Comic Sans MS", 20, "bold"))
-    leaderboardLabel = Label(leaderboardFrame, width=30, height=4, bg="#cbf7e6", text="LEADERBOARD", font=("Comic Sans MS", 20, "bold"))
-    infoLabel = Label(infoFrame, width=30, height=4, bg="#cbf7e6", text="HOW TO PLAY", font=("Comic Sans MS", 20, "bold"))
-    gameOverLabel = Label(gameOverFrame, width=30, height=4, bg="#cbf7e6", text="GAME OVER!", font=("Comic Sans MS", 20, "bold"))
+    settingsLabel = Label(settingsFrame, width=30, height=4, bg="pink", text="SETTINGS", font=("Comic Sans MS", 20, "bold"), borderwidth=3, relief="solid")
+    leaderboardLabel = Label(leaderboardFrame, width=30, height=4, bg="pink", text="LEADERBOARD", font=("Comic Sans MS", 20, "bold"), borderwidth=3, relief="solid")
+    infoLabel = Label(infoFrame, width=30, height=4, bg="pink", text="HOW TO PLAY", font=("Comic Sans MS", 20, "bold"), borderwidth=3, relief="solid")
+    gameOverLabel = Label(gameOverFrame, width=30, height=4, bg="pink", text="GAME OVER!", font=("Comic Sans MS", 20, "bold"), borderwidth=3, relief="solid")
 
     # Pack all labels
     homeLabel.pack(side="top", pady=(150, 0))
@@ -80,13 +82,15 @@ def initialiseMenu():
     leaderboardBtn.pack(side="top", pady=(20, 0))
     infoBtn.pack(side="top", pady=(20, 0))
     exitBtn.pack(side="top", pady=(20, 0))
-    settingsHomeBtn.pack(side="top", pady=(500, 0))
+    bgBtn.pack(side="top", pady=(200, 0))
+    bindsBtn.pack(side="top", pady=(20, 0))
+    settingsHomeBtn.pack(side="top", pady=(150, 0))
     leaderboardHomeBtn.pack(side="top", pady=(500, 0))
     infoHomeBtn.pack(side="top", pady=(500, 0))
     gameOverHomeBtn.pack(side="top", pady=(500, 0))
 
 def updateSettings():
-    '''Update the settings such as key binds and background colour'''
+    '''Update the settings such as key binds and background colour.'''
     # Set directions and background colour according to user input or first time setup
     global directionBinds, bgColour
     directionBinds = ["Up","Down","Left","Right"]
@@ -100,7 +104,7 @@ def updateSettings():
     gameOverFrame.config(bg=bgColour)
 
 def initialiseGame():
-    '''Sets up all of the variables and conditions in order to play the game, then starts the game loop'''
+    '''Sets up all of the variables and conditions in order to play the game, then starts the game loop.'''
     # Hide the menu and create the game canvas
     homeFrame.pack_forget()
     global gameCanvas
@@ -121,7 +125,7 @@ def initialiseGame():
     scoreText = gameCanvas.create_text(1800, 30, text="Score: " + str(score), font=("Comic Sans MS", 20, "bold"))
 
     # Start with 1 ball
-    for i in range(5):
+    for i in range(1):
         createBall()
     gameLoop()
 
@@ -144,7 +148,8 @@ def gameLoop():
     gameOverSwap()
 
 def moveBalls():
-    '''Responsible for checking collisions with the wall, between balls and the player, and moving each ball'''
+    '''Responsible for checking collisions with the wall, between balls and the player, and moving each ball.'''
+    # Check every ball
     for i in range(len(balls)):
 
         # Get coordinates of the ball
@@ -167,19 +172,39 @@ def moveBalls():
                 ySpeed[j] = -ySpeed[j]
                 xSpeed[j] = -xSpeed[j]
 
+        # Move ball using its speed values
         gameCanvas.move(balls[i], xSpeed[i], ySpeed[i])
 
 def createBall():
-    '''Creates a new ball and appends it to an array, along with its corresponding x and y speed and colour'''
-    # Create ball at random point
-    xPos = randint(50,1870)
-    yPos = randint(50,1030)
+    '''Creates a new ball and appends it to an array, along with its corresponding x and y speed and colour.'''
+    # Choose starting point for ball
+    side = randint(0,3) # Choose a side to start at
+    if side == 0: # Up
+        xPos = randint(50,1870)
+        yPos = 10
+    elif side == 1: # Down
+        xPos = randint(50,1870)
+        yPos = 1040
+    elif side == 2: # Left
+        xPos = 10
+        yPos = randint(50,1030)
+    else: # Right
+        xPos = 1880
+        yPos = randint(50,1030)
+
+    # Create ball
     xy = (xPos, yPos, xPos+20, yPos+20)
     balls.append(gameCanvas.create_oval(xy, fill="#ff0000"))
 
-    # Randomise speed of ball
-    tempX = randint(2,10)
+    # Generate speed values for ball
+    tempX = randint(2,10) # Get random speed values for x and y
     tempY = randint(2,10)
+    xSign = randint(0,1) # Determine direction (positive or negative speed)
+    ySign = randint(0,1)
+    if xSign == 0:
+        tempX = -tempX # Make direction Left (-x), else Right
+    if ySign == 0:
+        tempY = -tempY # Make direction Up (-y), else Down
     xSpeed.append(tempX)
     ySpeed.append(tempY)
 
@@ -199,7 +224,7 @@ def createBall():
     numBalls += 1
 
 def changeDirection(event):
-    '''Changed the x and y direction of the player according to what button they press'''
+    '''Changed the x and y direction of the player according to what button they press.'''
     global xDirection, yDirection
     if event.keysym == directionBinds[0]:
         xDirection = 0
@@ -215,7 +240,7 @@ def changeDirection(event):
         yDirection = 0
 
 def checkPlayerCrash():
-    '''Checks if the player is touching a ball or has collided with the wall, if so it ends the game'''
+    '''Checks if the player is touching a ball or has collided with the wall, if so it ends the game.'''
     global activeGame
 
     # Check if player has collided with wall
@@ -227,7 +252,7 @@ def checkPlayerCrash():
     for i in range(len(balls)):
         pos2 = gameCanvas.coords(balls[i])
         if pos[0] < pos2[2] and pos[2] > pos2[0] and pos[1] < pos2[3] and pos[3] > pos2[1] \
-        or pos[0] > pos2[2] and pos[2] < pos2[0] and pos[1] > pos2[3] and pos[3] < pos2[1]: # Need to check if either side has collided
+        or pos[0] > pos2[2] and pos[2] < pos2[0] and pos[1] > pos2[3] and pos[3] < pos2[1]: # Need to check if either side of player has collided
             activeGame = False
 
 
