@@ -78,7 +78,7 @@ def initialiseMenu():
     infoHomeBtn.pack(side="top", pady=(500, 0))
 
 def initialiseGame():
-    '''Sets up all of the variables and conditions in order to play the game'''
+    '''Sets up all of the variables and conditions in order to play the game, then starts the game loop'''
     #Hide the menu and create the game canvas
     homeFrame.pack_forget()
     global gameCanvas
@@ -168,6 +168,5 @@ def createBall():
 
 configureWindow()
 initialiseMenu()
-initialiseGame()
 
 window.mainloop()
