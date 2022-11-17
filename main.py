@@ -8,57 +8,9 @@ def configureWindow():
     window = Tk()
     window.title("Dodgems")
     window.geometry("1920x1080")
-    #window.attributes('-fullscreen', True)
+    window.attributes('-fullscreen', True)
 
-#---------------------------------------------- SWAPPING FRAMES FUNCTIONS --------------------------------------------------------------
-
-def homeSwap():
-    '''Hides all frames currently displayed and display the home frame.'''
-    settingsFrame.pack_forget()
-    leaderboardFrame.pack_forget()
-    infoFrame.pack_forget()
-    gameOverFrame.pack_forget()
-    homeFrame.pack(fill="both", expand=True)
-
-def settingsSwap():
-    '''Hides the home frame, bg frame, keybind frame and displays the settings frame.'''
-    homeFrame.pack_forget()
-    bgFrame.pack_forget()
-    keybindsFrame.pack_forget()
-    cheatsFrame.pack_forget()
-    settingsFrame.pack(fill="both", expand=True)
-
-def bgSwap():
-    '''Hides the setting frame and displays the bg frame.'''
-    settingsFrame.pack_forget()
-    bgFrame.pack(fill="both", expand=True)
-
-def keybindsSwap():
-    '''Hides the setting frame and displays the bg frame.'''
-    settingsFrame.pack_forget()
-    keybindsFrame.pack(fill="both", expand=True)
-
-def leaderboardSwap():
-    '''Hides the home frame and displays the leaderboard frame.'''
-    homeFrame.pack_forget()
-    leaderboardFrame.pack(fill="both", expand=True)
-
-def infoSwap():
-    '''Hides the home frame and displays the info frame.'''
-    homeFrame.pack_forget()
-    infoFrame.pack(fill="both", expand=True)
-
-def gameOverSwap():
-    '''Hides the game canvas and displays the game over screen.'''
-    gameCanvas.pack_forget()
-    gameOverFrame.pack(fill="both", expand=True)
-
-def cheatsSwap():
-    '''Hides the settings frame and displays the cheats frame.'''
-    settingsFrame.pack_forget()
-    cheatsFrame.pack(fill="both", expand=True)
-
-#---------------------------------------------- MENU INITIALISATION ---------------------------------------------------------------------
+#---------------------------------------------- MENU FUNCTIONS --------------------------------------------------------------
 
 def initialiseMenu():
     '''Sets up the menu functionality, including the home page, settings page, leaderboard page, info page, and all respective titles and buttons.'''
@@ -85,20 +37,20 @@ def initialiseMenu():
 
     # Create all buttons on home frame
     playBtn = Btn(homeFrame, width=25, height=1, text="Play", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=initialiseGame)
-    settingsBtn = Btn(homeFrame, width=25, height=1, text="Settings", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=settingsSwap)
-    leaderboardBtn = Btn(homeFrame, width=25, height=1, text="Leaderboard", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=leaderboardSwap)
-    infoBtn = Btn(homeFrame, width=25, height=1, text="How to Play", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=infoSwap)
+    settingsBtn = Btn(homeFrame, width=25, height=1, text="Settings", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:swapFrames(1))
+    leaderboardBtn = Btn(homeFrame, width=25, height=1, text="Leaderboard", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:swapFrames(4))
+    infoBtn = Btn(homeFrame, width=25, height=1, text="How to Play", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:swapFrames(5))
     exitBtn = Btn(homeFrame, width=25, height=1, text="Exit", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=window.destroy)
 
     # Create all buttons on settings frame
     global cheatsBtn
-    settingsHomeBtn = Btn(settingsFrame, width=25, height=1, text="Home", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=homeSwap)
-    bgBtn = Btn(settingsFrame, width=25, height=1, text="Change Background Colour", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=bgSwap)
-    keybindsBtn = Btn(settingsFrame, width=25, height=1, text="Change Keybinds", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=keybindsSwap)
+    settingsHomeBtn = Btn(settingsFrame, width=25, height=1, text="Home", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:swapFrames(0))
+    bgBtn = Btn(settingsFrame, width=25, height=1, text="Change Background Colour", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:swapFrames(2))
+    keybindsBtn = Btn(settingsFrame, width=25, height=1, text="Change Keybinds", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:swapFrames(3))
     cheatsBtn = Btn(settingsFrame, width=25, height=1, text="Cheats", bg="red", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=None, relief="ridge")
 
     # Create all buttons on the background colour frame
-    bgSettingsBtn = Btn(bgFrame, width=25, height=1, text="Back to Settings", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=settingsSwap)
+    bgSettingsBtn = Btn(bgFrame, width=25, height=1, text="Back to Settings", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:swapFrames(1))
     greenBtn = Btn(bgFrame, width=25, height=1, text="Green", bg="#cbf7e6", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:changeBackground(0))
     redBtn = Btn(bgFrame, width=25, height=1, text="Red", bg="#edd3dc", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:changeBackground(1))
     blueBtn = Btn(bgFrame, width=25, height=1, text="Blue", bg="#8ec8fa", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:changeBackground(2))
@@ -106,20 +58,20 @@ def initialiseMenu():
 
     # Create all buttons on the keybind frame
     global upBtn, downBtn, leftBtn, rightBtn, keybindsSettingsBtn
-    keybindsSettingsBtn = Btn(keybindsFrame, width=25, height=1, text="Back to Settings", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=settingsSwap)
+    keybindsSettingsBtn = Btn(keybindsFrame, width=25, height=1, text="Back to Settings", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:swapFrames(1))
     upBtn = Btn(keybindsFrame, width=25, height=1, text="Up: Up", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:setKeybindChange(0))
     downBtn = Btn(keybindsFrame, width=25, height=1, text="Down: Down", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:setKeybindChange(1))
     leftBtn = Btn(keybindsFrame, width=25, height=1, text="Left: Left", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:setKeybindChange(2))
     rightBtn = Btn(keybindsFrame, width=25, height=1, text="Right: Right", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:setKeybindChange(3))
 
     # Create all buttons on the cheats frame
-    cheatsHomeBtn = Btn(cheatsFrame, width=25, height=1, text="Back to Settings", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=settingsSwap)
+    cheatsHomeBtn = Btn(cheatsFrame, width=25, height=1, text="Back to Settings", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:swapFrames(1))
     smallerPlayerBtn = CheckBtn(cheatsFrame)
 
     # Create home buttons on rest of frames
-    leaderboardHomeBtn = Btn(leaderboardFrame, width=25, height=1, text="Home", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=homeSwap)
-    infoHomeBtn = Btn(infoFrame, width=25, height=1, text="Home", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=homeSwap)
-    gameOverHomeBtn = Btn(gameOverFrame, width=25, height=1, text="Home", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=homeSwap)
+    leaderboardHomeBtn = Btn(leaderboardFrame, width=25, height=1, text="Home", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:swapFrames(0))
+    infoHomeBtn = Btn(infoFrame, width=25, height=1, text="Home", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:swapFrames(0))
+    gameOverHomeBtn = Btn(gameOverFrame, width=25, height=1, text="Home", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:swapFrames(0))
 
     # Create all labels for each frame
     global logo, keybindsPromptLabel, finalScoreLabel
@@ -183,6 +135,39 @@ def initialiseMenu():
     leaderboardHomeBtn.pack(side="top", pady=(500, 0))
     infoHomeBtn.pack(side="top", pady=(90, 0))
     gameOverHomeBtn.pack(side="top", pady=(200, 0))
+
+def swapFrames(frameNum):
+    '''Swaps to a frame according to the given button press.'''
+    if frameNum == 0: # Swap to the home frame
+        settingsFrame.pack_forget()
+        leaderboardFrame.pack_forget()
+        infoFrame.pack_forget()
+        gameOverFrame.pack_forget()
+        homeFrame.pack(fill="both", expand=True)
+    elif frameNum == 1: # Swap to the settings frame
+        homeFrame.pack_forget()
+        bgFrame.pack_forget()
+        keybindsFrame.pack_forget()
+        cheatsFrame.pack_forget()
+        settingsFrame.pack(fill="both", expand=True)
+    elif frameNum == 2: # Swap to the background colour frame
+        settingsFrame.pack_forget()
+        bgFrame.pack(fill="both", expand=True)
+    elif frameNum == 3: # Swap to the keybinds frame
+        settingsFrame.pack_forget()
+        keybindsFrame.pack(fill="both", expand=True)
+    elif frameNum == 4: # Swap to the leaderboard frame
+        homeFrame.pack_forget()
+        leaderboardFrame.pack(fill="both", expand=True)
+    elif frameNum == 5: # Swap to the info frame
+        homeFrame.pack_forget()
+        infoFrame.pack(fill="both", expand=True)
+    elif frameNum == 6: # Swap to the game over frame
+        gameCanvas.pack_forget()
+        gameOverFrame.pack(fill="both", expand=True)
+    else: # Swap to the cheats frame
+        settingsFrame.pack_forget()
+        cheatsFrame.pack(fill="both", expand=True)
 
 #---------------------------------------------- SETTINGS FUNCTIONS --------------------------------------------------------------------
 
@@ -258,7 +243,7 @@ def updateKeybind(event):
         directionBinds[keybindNum] = "<" + event.keysym + ">" # Store as correct key format
         triggeredKeybindChange = False # Reset variables
         keybindsPromptLabel.config(text="Click a keybind to change")
-        keybindsSettingsBtn.config(text="Back to Settings", command=settingsSwap) # Change button back to normal
+        keybindsSettingsBtn.config(text="Back to Settings", command=lambda:swapFrames(1)) # Change button back to normal
         updateSettings(1) # Update settings to confirm change
     else:
         updateCheatCode(event.keysym) # Add keypress to cheat code
@@ -268,7 +253,7 @@ def cancelKeybindChange():
     global triggeredKeybindChange, keybindsPromptLabel, keybindsSettingsBtn
     triggeredKeybindChange = False #Reset variables
     keybindsPromptLabel.config(text="Click a keybind to change")
-    keybindsSettingsBtn.config(text="Back to Settings", command=settingsSwap) # Change button back to normal
+    keybindsSettingsBtn.config(text="Back to Settings", command=lambda:swapFrames(1)) # Change button back to normal
 
 #---------------------------------------------- CHEAT CODE FUNCTIONS -----------------------------------------------------------------------
 
@@ -282,7 +267,7 @@ def updateCheatCode(keyName):
     global cheatCode, cheatsBtn
     cheatCode += keyName
     if cheatCode == "unlockcheats":
-        cheatsBtn.config(command=cheatsSwap, relief="raised", bg="light blue")
+        cheatsBtn.config(command=lambda:swapFrames(7), relief="raised", bg="light blue")
 
 #---------------------------------------------- GAME FUNCTIONS -----------------------------------------------------------------------
 
@@ -312,8 +297,7 @@ def initialiseGame():
     #bossImage = gameCanvas.create_image()
 
     # Start with 1 ball
-    for i in range(5):
-        createBall()
+    createBall()
     
     # Start the countdown, then start the game
     countdown()
@@ -334,7 +318,7 @@ def countdown():
 def gameLoop():
     '''The main game loop that repeats until the game ends, then switches to the game over screen.'''
     # Keep track of if the game should loop again
-    global activeGame, time
+    global activeGame, time, paused
     activeGame = True
 
     # Keep looping until player is hit
@@ -342,27 +326,31 @@ def gameLoop():
         gameCanvas.move(player, xDirection, yDirection)
         moveBalls()
         checkPlayerCrash()
-        sleep(0.01)
-        time += 0.01
-        gameCanvas.itemconfig(scoreText, text="Score: " + str(time))
-        while paused:
-            sleep(0.1)
+        sleep(0.005)
+        time += 0.005
+        gameCanvas.itemconfig(scoreText, text="Score: " + str(numBalls))
+        if time > 1:
+            createBall()
+            time = 0
+        #while paused:
+        #    sleep(0.01)
         window.update()
 
     # Go to game over screen once game is finished
     finalScoreLabel.config(text="You scored " + str(numBalls) + " points!")
-    gameOverSwap()
+    swapFrames(6)
 
-def pause():
+def pause(event):
     global paused
     if paused:
-        paused = True
-        gameCanvas.itemconfig(pausedBackground, status="normal")
-        gameCanvas.itemconfig(pausedText, status="normal")
-    else:
         paused = False
-        gameCanvas.itemconfig(pausedBackground, status="hidden")
-        gameCanvas.itemconfig(pausedText, status="hidden")
+        gameCanvas.itemconfig(pausedBackground, state="hidden")
+        gameCanvas.itemconfig(pausedText, state="hidden")
+    else:
+        paused = True
+        gameCanvas.itemconfig(pausedBackground, state="normal")
+        gameCanvas.itemconfig(pausedText, state="normal")
+    print(paused)
 
 #def bossKey():
 #    pause()
