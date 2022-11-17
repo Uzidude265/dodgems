@@ -1,4 +1,4 @@
-from tkinter import Tk, Frame, Button as Btn, Label, PhotoImage as Image, Canvas
+from tkinter import Tk, Frame, Button as Btn, Label, PhotoImage as Image, Canvas, Checkbutton as CheckBtn
 from time import sleep
 from random import randint
 
@@ -8,7 +8,7 @@ def configureWindow():
     window = Tk()
     window.title("Dodgems")
     window.geometry("1920x1080")
-    window.attributes('-fullscreen', True)
+    #window.attributes('-fullscreen', True)
 
 #---------------------------------------------- SWAPPING FRAMES FUNCTIONS --------------------------------------------------------------
 
@@ -25,6 +25,7 @@ def settingsSwap():
     homeFrame.pack_forget()
     bgFrame.pack_forget()
     keybindsFrame.pack_forget()
+    cheatsFrame.pack_forget()
     settingsFrame.pack(fill="both", expand=True)
 
 def bgSwap():
@@ -52,21 +53,27 @@ def gameOverSwap():
     gameCanvas.pack_forget()
     gameOverFrame.pack(fill="both", expand=True)
 
+def cheatsSwap():
+    '''Hides the settings frame and displays the cheats frame.'''
+    settingsFrame.pack_forget()
+    cheatsFrame.pack(fill="both", expand=True)
+
 #---------------------------------------------- MENU INITIALISATION ---------------------------------------------------------------------
 
 def initialiseMenu():
     '''Sets up the menu functionality, including the home page, settings page, leaderboard page, info page, and all respective titles and buttons.'''
     #Initialise any variables used in the menu and initial settings
-    global triggeredKeybindChange, keybindNum, directionBinds, bgColour, previousBind
+    global triggeredKeybindChange, keybindNum, directionBinds, bgColour, previousBind, cheatCode
     triggeredKeybindChange = False
     keybindNum = 0
     directionBinds = ["<Up>","<Down>","<Left>","<Right>"]
     bgColour = "#cbf7e6"
     previousBind = ""
     howToPlayText = "Dodge the never-ending balls as long as you can!\nThe colour of the balls indicates their speed.\n\n(Black = Slow, Blue = Medium, Purple = Fast, Red = Very Fast)\n\nEvery 3 seconds, a new ball gets added at the sides, so watch out!\nYour final score is the number of balls you ended with.\n\nGood Luck!"
+    cheatCode = ""
 
     # Create frames for each page
-    global homeFrame, settingsFrame, leaderboardFrame, infoFrame, gameOverFrame, bgFrame, keybindsFrame
+    global homeFrame, settingsFrame, leaderboardFrame, infoFrame, gameOverFrame, bgFrame, keybindsFrame, cheatsFrame
     homeFrame = Frame(window)
     settingsFrame = Frame(window)
     leaderboardFrame = Frame(window)
@@ -74,6 +81,7 @@ def initialiseMenu():
     gameOverFrame = Frame(window)
     bgFrame = Frame(window)
     keybindsFrame = Frame(window)
+    cheatsFrame = Frame(window)
 
     # Create all buttons on home frame
     playBtn = Btn(homeFrame, width=25, height=1, text="Play", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=initialiseGame)
@@ -83,9 +91,11 @@ def initialiseMenu():
     exitBtn = Btn(homeFrame, width=25, height=1, text="Exit", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=window.destroy)
 
     # Create all buttons on settings frame
+    global cheatsBtn
     settingsHomeBtn = Btn(settingsFrame, width=25, height=1, text="Home", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=homeSwap)
     bgBtn = Btn(settingsFrame, width=25, height=1, text="Change Background Colour", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=bgSwap)
     keybindsBtn = Btn(settingsFrame, width=25, height=1, text="Change Keybinds", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=keybindsSwap)
+    cheatsBtn = Btn(settingsFrame, width=25, height=1, text="Cheats", bg="red", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=None, relief="sunken")
 
     # Create all buttons on the background colour frame
     bgSettingsBtn = Btn(bgFrame, width=25, height=1, text="Back to Settings", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=settingsSwap)
@@ -101,6 +111,10 @@ def initialiseMenu():
     downBtn = Btn(keybindsFrame, width=25, height=1, text="Down: Down", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:setKeybindChange(1))
     leftBtn = Btn(keybindsFrame, width=25, height=1, text="Left: Left", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:setKeybindChange(2))
     rightBtn = Btn(keybindsFrame, width=25, height=1, text="Right: Right", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:setKeybindChange(3))
+
+    # Create all buttons on the cheats frame
+    cheatsHomeBtn = Btn(cheatsFrame, width=25, height=1, text="Back to Settings", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=settingsSwap)
+    smallerPlayerBtn = CheckBtn(cheatsFrame)
 
     # Create home buttons on rest of frames
     leaderboardHomeBtn = Btn(leaderboardFrame, width=25, height=1, text="Home", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=homeSwap)
@@ -120,6 +134,7 @@ def initialiseMenu():
     bgLabel = Label(bgFrame, width=30, height=4, bg="pink", text="CHANGE BACKGROUND COLOUR", font=("Comic Sans MS", 20, "bold"), borderwidth=3, relief="solid")
     keybindsLabel = Label(keybindsFrame, width=30, height=4, bg="pink", text="CHANGE KEYBINDS", font=("Comic Sans MS", 20, "bold"), borderwidth=3, relief="solid")
     keybindsPromptLabel = Label(keybindsFrame, width=50, height=2, bg="pink", text="Click a keybind to change", font=("Comic Sans MS", 15, "bold"), borderwidth=3, relief="solid")
+    cheatsLabel = Label(cheatsFrame, width=30, height=4, bg="pink", text="CHEATS", font=("Comic Sans MS", 20, "bold"), borderwidth=3, relief="solid")
 
     # Pack and position all labels
     homeLabel.pack(side="top", pady=(130, 0))
@@ -132,6 +147,7 @@ def initialiseMenu():
     bgLabel.pack(side="top", pady=(150, 0))
     keybindsLabel.pack(side="top", pady=(150, 0))
     keybindsPromptLabel.pack(side="top", pady=(30, 0))
+    cheatsLabel.pack(side="top", pady=(150, 0))
 
     # Pack all buttons on the home frame
     playBtn.pack(side="top", pady=(120, 0))
@@ -141,8 +157,9 @@ def initialiseMenu():
     exitBtn.pack(side="top", pady=(20, 0))
 
     # Pack all buttons on the setting frame
-    bgBtn.pack(side="top", pady=(200, 0))
+    bgBtn.pack(side="top", pady=(130, 0))
     keybindsBtn.pack(side="top", pady=(20, 0))
+    cheatsBtn.pack(side="top", pady=(20, 0))
     settingsHomeBtn.pack(side="top", pady=(170, 0))
 
     # Pack all buttons on the background colour frame
@@ -152,14 +169,17 @@ def initialiseMenu():
     yellowBtn.pack(side="top", pady=(20, 0))
     bgSettingsBtn.pack(side="top", pady=(120, 0))
 
-    #Pack all buttons on the keybind frame
+    # Pack all buttons on the keybind frame
     upBtn.pack(side="top", pady=(60, 0))
     downBtn.pack(side="top", pady=(20, 0))
     leftBtn.pack(side="top", pady=(20, 0))
     rightBtn.pack(side="top", pady=(20, 0))    
     keybindsSettingsBtn.pack(side="top", pady=(70, 0))
 
-    #Pack rest of home buttons
+    # Pack all buttons on the cheats frame
+    cheatsHomeBtn.pack(side="top", pady=(500, 0))
+
+    # Pack rest of home buttons
     leaderboardHomeBtn.pack(side="top", pady=(500, 0))
     infoHomeBtn.pack(side="top", pady=(90, 0))
     gameOverHomeBtn.pack(side="top", pady=(200, 0))
@@ -177,6 +197,7 @@ def updateSettings(updateType):
         gameOverFrame.config(bg=bgColour)
         bgFrame.config(bg=bgColour)
         keybindsFrame.config(bg=bgColour)
+        cheatsFrame.config(bg=bgColour)
 
     # Update button text if they updated keybind and update the bind
     elif updateType == 1:
@@ -203,6 +224,7 @@ def updateSettings(updateType):
         window.bind(directionBinds[1], downDirection)
         window.bind(directionBinds[2], leftDirection)
         window.bind(directionBinds[3], rightDirection)
+        window.bind("<BackSpace>", cancelCheatCode)
         window.bind("<Escape>", pause)
         window.bind("<Key>", updateKeybind)
 
@@ -228,7 +250,7 @@ def setKeybindChange(tempNum):
     keybindsSettingsBtn.config(text="Cancel", command=cancelKeybindChange) # Change button to a cancel button
 
 def updateKeybind(event):
-    '''Updates the keybind as long as they intended to.'''
+    '''Updates the keybind as long as they intended to, else adds the keypress to the cheat code buffer.'''
     global directionBinds, triggeredKeybindChange, keybindsPromptLabel, previousBind, keybindsSettingsBtn
     # Only update if they pressed a button beforehand
     if triggeredKeybindChange == True:
@@ -238,6 +260,8 @@ def updateKeybind(event):
         keybindsPromptLabel.config(text="Click a keybind to change")
         keybindsSettingsBtn.config(text="Back to Settings", command=settingsSwap) # Change button back to normal
         updateSettings(1) # Update settings to confirm change
+    else:
+        updateCheatCode(event.keysym) # Add keypress to cheat code
 
 def cancelKeybindChange():
     '''Used if the user decides not to bind a key after clicking a button.'''
@@ -245,6 +269,20 @@ def cancelKeybindChange():
     triggeredKeybindChange = False #Reset variables
     keybindsPromptLabel.config(text="Click a keybind to change")
     keybindsSettingsBtn.config(text="Back to Settings", command=settingsSwap) # Change button back to normal
+
+#---------------------------------------------- CHEAT CODE FUNCTIONS -----------------------------------------------------------------------
+
+def cancelCheatCode(event):
+    '''Resets the cheat code for misinputs.'''
+    global cheatCode
+    cheatCode = ""
+ 
+def updateCheatCode(keyName):
+    '''Updates the cheat code and then checks if the player has inputted it correctly.'''
+    global cheatCode, cheatsBtn
+    cheatCode += keyName
+    if cheatCode == "unlockcheats":
+        cheatsBtn.config(command=cheatsSwap, relief="raised", bg="light blue")
 
 #---------------------------------------------- GAME FUNCTIONS -----------------------------------------------------------------------
 
@@ -257,7 +295,7 @@ def initialiseGame():
     gameCanvas.pack(fill="both", expand=True)
 
     # Create all of the variables needed
-    global time, numBalls, balls, xSpeed, ySpeed, xDirection, yDirection, player, scoreText, countdownText
+    global time, numBalls, balls, xSpeed, ySpeed, xDirection, yDirection, paused, player, scoreText, countdownText, pausedBackground, pausedText, bossImage
     time = 0
     numBalls = 0
     balls = []
@@ -265,9 +303,13 @@ def initialiseGame():
     ySpeed = []
     xDirection = 7
     yDirection = 0
+    paused = False
     player = gameCanvas.create_rectangle(930, 510, 990, 570, fill="light blue", outline="black")
     scoreText = gameCanvas.create_text(1800, 30, text="Score: " + str(time), font=("Comic Sans MS", 20, "bold"))
     countdownText = gameCanvas.create_text(960, 540, text="3", font=("Comic Sans MS", 75, "bold"), state="normal")
+    pausedBackground = gameCanvas.create_rectangle(850, 480, 100, 600, fill="pink", outline="black", state="hidden")
+    pausedText = gameCanvas.create_text(960, 540, text="PAUSED\nPress Esc to resume.", font=("Comic Sans MS", 75, "bold"), state="hidden")
+    #bossImage = gameCanvas.create_image()
 
     # Start with 1 ball
     for i in range(5):
@@ -303,6 +345,8 @@ def gameLoop():
         sleep(0.01)
         time += 0.01
         gameCanvas.itemconfig(scoreText, text="Score: " + str(time))
+        while paused:
+            sleep(0.1)
         window.update()
 
     # Go to game over screen once game is finished
@@ -310,7 +354,18 @@ def gameLoop():
     gameOverSwap()
 
 def pause():
-    pass
+    global paused
+    if paused:
+        paused = True
+        gameCanvas.itemconfig(pausedBackground, status="normal")
+        gameCanvas.itemconfig(pausedText, status="normal")
+    else:
+        paused = False
+        gameCanvas.itemconfig(pausedBackground, status="hidden")
+        gameCanvas.itemconfig(pausedText, status="hidden")
+
+#def bossKey():
+#    pause()
 
 #---------------------------------------------- BALL FUNCTIONS -----------------------------------------------------------------------
 
