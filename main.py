@@ -1,4 +1,4 @@
-from tkinter import Tk, Frame, Button as Btn, Label, PhotoImage as Image, Canvas, Checkbutton as CheckBtn
+from tkinter import Tk, Frame, Button as Btn, Label, PhotoImage as Image, Canvas, Checkbutton as CheckBtn, ttk
 from time import sleep
 from random import randint
 
@@ -34,6 +34,9 @@ def initialiseMenu():
     bgFrame = Frame(window)
     keybindsFrame = Frame(window)
     cheatsFrame = Frame(window)
+
+    # Create the leaderboard
+    createLeaderboard()
 
     # Create all buttons on home frame
     playBtn = Btn(homeFrame, width=25, height=1, text="Play", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=initialiseGame)
@@ -101,6 +104,9 @@ def initialiseMenu():
     keybindsPromptLabel.pack(side="top", pady=(30, 0))
     cheatsLabel.pack(side="top", pady=(150, 0))
 
+    # Pack the leaderboard
+    leaderboard.pack(side="top", pady=(50, 0))
+
     # Pack all buttons on the home frame
     playBtn.pack(side="top", pady=(120, 0))
     settingsBtn.pack(side="top", pady=(20, 0))
@@ -132,9 +138,25 @@ def initialiseMenu():
     cheatsHomeBtn.pack(side="top", pady=(500, 0))
 
     # Pack rest of home buttons
-    leaderboardHomeBtn.pack(side="top", pady=(500, 0))
+    leaderboardHomeBtn.pack(side="top", pady=(60, 0))
     infoHomeBtn.pack(side="top", pady=(90, 0))
     gameOverHomeBtn.pack(side="top", pady=(200, 0))
+
+def createLeaderboard():
+    '''Uses a text file containing information to create and fill the leaderboard.'''
+    global leaderboard
+    style = ttk.Style()
+    style.configure("Treeview", font=("Comic Sans MS", 15, "bold"), rowheight=35)
+    style.configure("Treeview.Heading", font=("Comic Sans MS", 15, "bold"))
+    leaderboard = ttk.Treeview(leaderboardFrame, columns=("name", "stage", "score"), show="headings")
+    leaderboard.column("name", anchor="center")
+    leaderboard.heading("name", text="Name")
+    leaderboard.column("stage", anchor="center")
+    leaderboard.heading("stage", text="Stage")
+    leaderboard.column("score", anchor="center")
+    leaderboard.heading("score", text="Score")
+    for i in range(20):
+        leaderboard.insert("", "end", iid=i, values=("Uzi", i, i))
 
 def swapFrames(frameNum):
     '''Swaps to a frame according to the given button press.'''
@@ -280,8 +302,9 @@ def initialiseGame():
     gameCanvas.pack(fill="both", expand=True)
 
     # Create all of the variables needed
-    global time, numBalls, balls, xSpeed, ySpeed, xDirection, yDirection, paused, player, scoreText, countdownText, pausedBackground, pausedText, bossImage
+    global time, score, numBalls, balls, xSpeed, ySpeed, xDirection, yDirection, paused, player, scoreText, countdownText, pausedBackground, pausedText, bossImage
     time = 0
+    score = 0
     numBalls = 0
     balls = []
     xSpeed = []
@@ -290,7 +313,7 @@ def initialiseGame():
     yDirection = 0
     paused = False
     player = gameCanvas.create_rectangle(930, 510, 990, 570, fill="light blue", outline="black")
-    scoreText = gameCanvas.create_text(1800, 30, text="Score: " + str(time), font=("Comic Sans MS", 20, "bold"))
+    scoreText = gameCanvas.create_text(1800, 30, text="Score: " + str(score), font=("Comic Sans MS", 20, "bold"))
     countdownText = gameCanvas.create_text(960, 540, text="3", font=("Comic Sans MS", 75, "bold"), state="normal")
     pausedBackground = gameCanvas.create_rectangle(850, 480, 100, 600, fill="pink", outline="black", state="hidden")
     pausedText = gameCanvas.create_text(960, 540, text="PAUSED\nPress Esc to resume.", font=("Comic Sans MS", 75, "bold"), state="hidden")
@@ -318,7 +341,7 @@ def countdown():
 def gameLoop():
     '''The main game loop that repeats until the game ends, then switches to the game over screen.'''
     # Keep track of if the game should loop again
-    global activeGame, time, paused
+    global activeGame, time, score, paused
     activeGame = True
 
     # Keep looping until player is hit
@@ -328,7 +351,9 @@ def gameLoop():
         checkPlayerCrash()
         sleep(0.005)
         time += 0.005
-        gameCanvas.itemconfig(scoreText, text="Score: " + str(numBalls))
+        score += 0.02
+        displayScore = int(score)
+        gameCanvas.itemconfig(scoreText, text="Score: " + str(displayScore))
         if time > 1:
             createBall()
             time = 0
@@ -337,7 +362,8 @@ def gameLoop():
         window.update()
 
     # Go to game over screen once game is finished
-    finalScoreLabel.config(text="You scored " + str(numBalls) + " points!")
+    score = int(score)
+    finalScoreLabel.config(text="You scored " + str(score) + " points!")
     swapFrames(6)
 
 def pause(event):
