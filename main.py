@@ -19,9 +19,21 @@ def homeSwap():
     homeFrame.pack(fill="both", expand=True)
 
 def settingsSwap():
-    '''Hides the home frame and displays the settings frame.'''
+    '''Hides the home frame, bg frame, keybind frame and displays the settings frame.'''
     homeFrame.pack_forget()
+    bgFrame.pack_forget()
+    keybindsFrame.pack_forget()
     settingsFrame.pack(fill="both", expand=True)
+
+def bgSwap():
+    '''Hides the setting frame and displays the bg frame.'''
+    settingsFrame.pack_forget()
+    bgFrame.pack(fill="both", expand=True)
+
+def keybindsSwap():
+    '''Hides the setting frame and displays the bg frame.'''
+    settingsFrame.pack_forget()
+    keybindsFrame.pack(fill="both", expand=True)
 
 def leaderboardSwap():
     '''Hides the home frame and displays the leaderboard frame.'''
@@ -41,67 +53,136 @@ def gameOverSwap():
 def initialiseMenu():
     '''Sets up the menu functionality, including the home page, settings page, leaderboard page, info page, and all respective titles and buttons.'''
     # Create frames for each page
-    global homeFrame, settingsFrame, leaderboardFrame, infoFrame, gameOverFrame, logo
+    global homeFrame, settingsFrame, leaderboardFrame, infoFrame, gameOverFrame, bgFrame, keybindsFrame, logo, keybindsPromptLabel
     homeFrame = Frame(window)
     settingsFrame = Frame(window)
     leaderboardFrame = Frame(window)
     infoFrame = Frame(window)
     gameOverFrame = Frame(window)
+    bgFrame = Frame(window)
+    keybindsFrame = Frame(window)
 
-    # Create all buttons
-    playBtn = Btn(homeFrame, width=20, height=1, text="Play", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=initialiseGame)
-    settingsBtn = Btn(homeFrame, width=20, height=1, text="Settings", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=settingsSwap)
-    leaderboardBtn = Btn(homeFrame, width=20, height=1, text="Leaderboard", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=leaderboardSwap)
-    infoBtn = Btn(homeFrame, width=20, height=1, text="How to Play", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=infoSwap)
-    exitBtn = Btn(homeFrame, width=20, height=1, text="Exit", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=window.destroy)
+    # Create all buttons on home frame
+    playBtn = Btn(homeFrame, width=25, height=1, text="Play", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=initialiseGame)
+    settingsBtn = Btn(homeFrame, width=25, height=1, text="Settings", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=settingsSwap)
+    leaderboardBtn = Btn(homeFrame, width=25, height=1, text="Leaderboard", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=leaderboardSwap)
+    infoBtn = Btn(homeFrame, width=25, height=1, text="How to Play", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=infoSwap)
+    exitBtn = Btn(homeFrame, width=25, height=1, text="Exit", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=window.destroy)
+
+    # Create all buttons on settings frame
     settingsHomeBtn = Btn(settingsFrame, width=25, height=1, text="Home", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=homeSwap)
-    bgBtn = Btn(settingsFrame, width=25, height=1, text="Change Background Colour", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=None)
-    bindsBtn = Btn(settingsFrame, width=25, height=1, text="Change Key Binds", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=None)
-    leaderboardHomeBtn = Btn(leaderboardFrame, width=20, height=1, text="Home", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=homeSwap)
-    infoHomeBtn = Btn(infoFrame, width=20, height=1, text="Home", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=homeSwap)
-    gameOverHomeBtn = Btn(gameOverFrame, width=20, height=1, text="Home", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=homeSwap)
+    bgBtn = Btn(settingsFrame, width=25, height=1, text="Change Background Colour", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=bgSwap)
+    keybindsBtn = Btn(settingsFrame, width=25, height=1, text="Change Keybinds", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=keybindsSwap)
 
-    # Create all labels
+    # Create all buttons on the background colour frame
+    bgSettingsBtn = Btn(bgFrame, width=25, height=1, text="Back to Settings", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=settingsSwap)
+    greenBtn = Btn(bgFrame, width=25, height=1, text="Green", bg="#cbf7e6", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:changeBackground(0))
+    redBtn = Btn(bgFrame, width=25, height=1, text="Red", bg="#edd3dc", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:changeBackground(1))
+    blueBtn = Btn(bgFrame, width=25, height=1, text="Blue", bg="#8ec8fa", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:changeBackground(2))
+    yellowBtn = Btn(bgFrame, width=25, height=1, text="Yellow", bg="#fffcc2", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:changeBackground(3))
+
+    # Create all buttons on the keybind frame
+    keybindsSettingsBtn = Btn(keybindsFrame, width=25, height=1, text="Back to Settings", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=settingsSwap)
+    upBtn = Btn(keybindsFrame, width=25, height=1, text="Up: Up", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:changeKeybinds(0))
+    downBtn = Btn(keybindsFrame, width=25, height=1, text="Down: Down", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:changeKeybinds(1))
+    leftBtn = Btn(keybindsFrame, width=25, height=1, text="Left: Left", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:changeKeybinds(2))
+    rightBtn = Btn(keybindsFrame, width=25, height=1, text="Right: Right", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:changeKeybinds(3))
+
+    # Create home buttons on rest of frames
+    leaderboardHomeBtn = Btn(leaderboardFrame, width=25, height=1, text="Home", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=homeSwap)
+    infoHomeBtn = Btn(infoFrame, width=25, height=1, text="Home", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=homeSwap)
+    gameOverHomeBtn = Btn(gameOverFrame, width=25, height=1, text="Home", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=homeSwap)
+
+    # Create all labels for each frame
     logo = Image(file="Dodgems.png")
     homeLabel = Label(homeFrame, image=logo, highlightthickness=10)
     settingsLabel = Label(settingsFrame, width=30, height=4, bg="pink", text="SETTINGS", font=("Comic Sans MS", 20, "bold"), borderwidth=3, relief="solid")
     leaderboardLabel = Label(leaderboardFrame, width=30, height=4, bg="pink", text="LEADERBOARD", font=("Comic Sans MS", 20, "bold"), borderwidth=3, relief="solid")
     infoLabel = Label(infoFrame, width=30, height=4, bg="pink", text="HOW TO PLAY", font=("Comic Sans MS", 20, "bold"), borderwidth=3, relief="solid")
     gameOverLabel = Label(gameOverFrame, width=30, height=4, bg="pink", text="GAME OVER!", font=("Comic Sans MS", 20, "bold"), borderwidth=3, relief="solid")
+    bgLabel = Label(bgFrame, width=30, height=4, bg="pink", text="CHANGE BACKGROUND COLOUR", font=("Comic Sans MS", 20, "bold"), borderwidth=3, relief="solid")
+    keybindsLabel = Label(keybindsFrame, width=30, height=4, bg="pink", text="CHANGE KEYBINDS", font=("Comic Sans MS", 20, "bold"), borderwidth=3, relief="solid")
+    keybindsPromptLabel = Label(keybindsFrame, width=50, height=2, bg="pink", text="Click a keybind to change:", font=("Comic Sans MS", 15, "bold"), borderwidth=3, relief="solid")
 
-    # Pack all labels
-    homeLabel.pack(side="top", pady=(150, 0))
+    # Pack and position all labels
+    homeLabel.pack(side="top", pady=(130, 0))
     settingsLabel.pack(side="top", pady=(150, 0))
     leaderboardLabel.pack(side="top", pady=(150, 0))
     infoLabel.pack(side="top", pady=(150, 0))
     gameOverLabel.pack(side="top", pady=(150, 0))
+    bgLabel.pack(side="top", pady=(150, 0))
+    keybindsLabel.pack(side="top", pady=(150, 0))
+    keybindsPromptLabel.pack(side="top", pady=(30,0))
 
-    # Pack all buttons
-    playBtn.pack(side="top", pady=(100, 0))
+    # Pack and position all buttons
+    playBtn.pack(side="top", pady=(120, 0))
     settingsBtn.pack(side="top", pady=(20, 0))
     leaderboardBtn.pack(side="top", pady=(20, 0))
     infoBtn.pack(side="top", pady=(20, 0))
     exitBtn.pack(side="top", pady=(20, 0))
     bgBtn.pack(side="top", pady=(200, 0))
-    bindsBtn.pack(side="top", pady=(20, 0))
-    settingsHomeBtn.pack(side="top", pady=(150, 0))
+    greenBtn.pack(side="top", pady=(110, 0))
+    redBtn.pack(side="top", pady=(20, 0))
+    blueBtn.pack(side="top", pady=(20, 0))
+    yellowBtn.pack(side="top", pady=(20, 0))
+    bgSettingsBtn.pack(side="top", pady=(120, 0))
+    keybindsBtn.pack(side="top", pady=(20, 0))
+    upBtn.pack(side="top", pady=(60, 0))
+    downBtn.pack(side="top", pady=(20, 0))
+    leftBtn.pack(side="top", pady=(20, 0))
+    rightBtn.pack(side="top", pady=(20, 0))    
+    keybindsSettingsBtn.pack(side="top", pady=(70, 0))
+    settingsHomeBtn.pack(side="top", pady=(170, 0))
     leaderboardHomeBtn.pack(side="top", pady=(500, 0))
     infoHomeBtn.pack(side="top", pady=(500, 0))
     gameOverHomeBtn.pack(side="top", pady=(500, 0))
 
-def updateSettings():
-    '''Update the settings such as key binds and background colour.'''
-    # Set directions and background colour according to user input or first time setup
+def changeBackground(bgNum):
+    '''Changes the colour of the backgrounds according to user input'''
+    global bgColour
+    if bgNum == 0:
+        bgColour = "#cbf7e6"
+    elif bgNum == 1:
+        bgColour = "#edd3dc"
+    elif bgNum == 2:
+        bgColour = "#8ec8fa"
+    else:
+        bgColour = "#fffcc2"
+    
+    #Update settings to confirm change
+    updateSettings()
+
+def changeKeybinds(keybindNum):
+    keybindsPromptLabel.config(text="Press the key you want to bind:")
+
+def initialiseSettings():
+    '''Used to set up the settings for the first time'''
     global directionBinds, bgColour
-    directionBinds = ["Up","Down","Left","Right"]
+    directionBinds = ["<Up>","<Down>","<Left>","<Right>"]
     bgColour = "#cbf7e6"
 
+def updateSettings():
+    '''Update the settings such as key binds and background colour.'''
     # Update colours of pages
     homeFrame.config(bg=bgColour)
     settingsFrame.config(bg=bgColour)
     leaderboardFrame.config(bg=bgColour)
     infoFrame.config(bg=bgColour)
     gameOverFrame.config(bg=bgColour)
+    bgFrame.config(bg=bgColour)
+    keybindsFrame.config(bg=bgColour)
+
+def countdown():
+    '''Short countdown before the game starts'''
+    global countdownText
+    for i in range(3, 0, -1):
+        gameCanvas.itemconfig(countdownText, text=str(i))
+        window.update()
+        sleep(1)
+    gameCanvas.itemconfig(countdownText, text="Go!")
+    window.update()
+    sleep(1)
+    gameCanvas.itemconfig(countdownText, state="hidden")
 
 def initialiseGame():
     '''Sets up all of the variables and conditions in order to play the game, then starts the game loop.'''
@@ -112,7 +193,7 @@ def initialiseGame():
     gameCanvas.pack(fill="both", expand=True)
 
     # Create all of the variables needed
-    global time, score, numBalls, balls, xSpeed, ySpeed, xDirection, yDirection, player, scoreText
+    global time, score, numBalls, balls, xSpeed, ySpeed, xDirection, yDirection, player, scoreText, countdownText
     time = 0
     score = 0
     numBalls = 0
@@ -123,10 +204,14 @@ def initialiseGame():
     yDirection = 0
     player = gameCanvas.create_rectangle(930, 510, 990, 570, fill="light blue", outline="black")
     scoreText = gameCanvas.create_text(1800, 30, text="Score: " + str(score), font=("Comic Sans MS", 20, "bold"))
+    countdownText = gameCanvas.create_text(960, 540, text="3", font=("Comic Sans MS", 75, "bold"), state="normal")
 
     # Start with 1 ball
-    for i in range(1):
+    for i in range(10):
         createBall()
+    
+    # Start the countdown, then start the game
+    countdown()
     gameLoop()
 
 def gameLoop():
@@ -143,7 +228,7 @@ def gameLoop():
         sleep(0.005)
         time += 0.005
         window.update()
-    
+
     # Go to game over screen once game is finished
     gameOverSwap()
 
@@ -209,35 +294,43 @@ def createBall():
     ySpeed.append(tempY)
 
     # Determine colour of ball based on speed
-    averageSpeed = (tempX + tempY)/2
+    averageSpeed = (abs(tempX) + abs(tempY))/2
     global numBalls
     if averageSpeed >= 8:
-        gameCanvas.itemconfig(balls[numBalls], fill="#ff0000", outline="#000000")
+        gameCanvas.itemconfig(balls[numBalls], fill="#ff0000", outline="black")
     elif averageSpeed >= 7:
-        gameCanvas.itemconfig(balls[numBalls], fill="#f202da", outline="#000000")
+        gameCanvas.itemconfig(balls[numBalls], fill="#d303fc", outline="black")
     elif averageSpeed >= 5:
-        gameCanvas.itemconfig(balls[numBalls], fill="#ae16cc", outline="#000000")
+        gameCanvas.itemconfig(balls[numBalls], fill="blue", outline="black")
     else:
-        gameCanvas.itemconfig(balls[numBalls], fill="#411466", outline="#000000")
+        gameCanvas.itemconfig(balls[numBalls], fill="black", outline="black")
     
     # Increment number of balls
     numBalls += 1
 
-def changeDirection(event):
-    '''Changed the x and y direction of the player according to what button they press.'''
+def upDirection(event):
+    '''Change the player's direction to up.'''
     global xDirection, yDirection
-    if event.keysym == directionBinds[0]:
-        xDirection = 0
-        yDirection = -7
-    elif event.keysym == directionBinds[1]:
-        xDirection = 0
-        yDirection = 7
-    elif event.keysym == directionBinds[2]:
-        xDirection = -7
-        yDirection = 0
-    elif event.keysym == directionBinds[3]:
-        xDirection = 7
-        yDirection = 0
+    xDirection = 0
+    yDirection = -7
+
+def downDirection(event):
+    '''Change the player's direction to down.'''
+    global xDirection, yDirection
+    xDirection = 0
+    yDirection = 7
+
+def leftDirection(event):
+    '''Change the player's direction to left.'''
+    global xDirection, yDirection
+    xDirection = -7
+    yDirection = 0
+
+def rightDirection(event):
+    '''Change the player's direction to right.'''
+    global xDirection, yDirection
+    xDirection = 7
+    yDirection = 0
 
 def checkPlayerCrash():
     '''Checks if the player is touching a ball or has collided with the wall, if so it ends the game.'''
@@ -257,6 +350,7 @@ def checkPlayerCrash():
 
 
 configureWindow() # Set up the window
+initialiseSettings() # Set the initial background colour and keybinds
 initialiseMenu() # Set up the menu
 updateSettings() # Use first time settings
 
@@ -264,6 +358,9 @@ updateSettings() # Use first time settings
 homeFrame.pack(fill="both", expand=True)
 
 #Whenever key press is detected, change direction of player
-window.bind("<Key>", changeDirection)
+window.bind(directionBinds[0], upDirection)
+window.bind(directionBinds[1], downDirection)
+window.bind(directionBinds[2], leftDirection)
+window.bind(directionBinds[3], rightDirection)
 
 window.mainloop()
