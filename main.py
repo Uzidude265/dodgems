@@ -56,6 +56,15 @@ def gameOverSwap():
 
 def initialiseMenu():
     '''Sets up the menu functionality, including the home page, settings page, leaderboard page, info page, and all respective titles and buttons.'''
+    #Initialise any variables used in the menu and initial settings
+    global triggeredKeybindChange, keybindNum, directionBinds, bgColour, previousBind
+    triggeredKeybindChange = False
+    keybindNum = 0
+    directionBinds = ["<Up>","<Down>","<Left>","<Right>"]
+    bgColour = "#cbf7e6"
+    previousBind = ""
+    howToPlayText = "Dodge the never-ending balls as long as you can!\nThe colour of the balls indicates their speed.\n\n(Black = Slow, Blue = Medium, Purple = Fast, Red = Very Fast)\n\nEvery 3 seconds, a new ball gets added at the sides, so watch out!\nYour final score is the number of balls you ended with.\n\nGood Luck!"
+
     # Create frames for each page
     global homeFrame, settingsFrame, leaderboardFrame, infoFrame, gameOverFrame, bgFrame, keybindsFrame
     homeFrame = Frame(window)
@@ -105,6 +114,7 @@ def initialiseMenu():
     settingsLabel = Label(settingsFrame, width=30, height=4, bg="pink", text="SETTINGS", font=("Comic Sans MS", 20, "bold"), borderwidth=3, relief="solid")
     leaderboardLabel = Label(leaderboardFrame, width=30, height=4, bg="pink", text="LEADERBOARD", font=("Comic Sans MS", 20, "bold"), borderwidth=3, relief="solid")
     infoLabel = Label(infoFrame, width=30, height=4, bg="pink", text="HOW TO PLAY", font=("Comic Sans MS", 20, "bold"), borderwidth=3, relief="solid")
+    howToPlayLabel = Label(infoFrame, width=60, height=12, bg="pink", text=howToPlayText, font=("Comic Sans MS", 15, "bold"), borderwidth=3, relief="solid")
     gameOverLabel = Label(gameOverFrame, width=30, height=4, bg="pink", text="GAME OVER!", font=("Comic Sans MS", 20, "bold"), borderwidth=3, relief="solid")
     finalScoreLabel = Label(gameOverFrame, width=30, height=3, bg="pink", text="", font=("Comic Sans MS", 18, "bold"), borderwidth=3, relief="solid")
     bgLabel = Label(bgFrame, width=30, height=4, bg="pink", text="CHANGE BACKGROUND COLOUR", font=("Comic Sans MS", 20, "bold"), borderwidth=3, relief="solid")
@@ -116,6 +126,7 @@ def initialiseMenu():
     settingsLabel.pack(side="top", pady=(150, 0))
     leaderboardLabel.pack(side="top", pady=(150, 0))
     infoLabel.pack(side="top", pady=(150, 0))
+    howToPlayLabel.pack(side="top", pady=(50, 0))
     gameOverLabel.pack(side="top", pady=(150, 0))
     finalScoreLabel.pack(side="top", pady=(180, 0))
     bgLabel.pack(side="top", pady=(150, 0))
@@ -150,16 +161,8 @@ def initialiseMenu():
 
     #Pack rest of home buttons
     leaderboardHomeBtn.pack(side="top", pady=(500, 0))
-    infoHomeBtn.pack(side="top", pady=(500, 0))
+    infoHomeBtn.pack(side="top", pady=(90, 0))
     gameOverHomeBtn.pack(side="top", pady=(200, 0))
-
-    #Initialise any variables used in the menu and initial settings
-    global triggeredKeybindChange, keybindNum, directionBinds, bgColour, previousBind
-    triggeredKeybindChange = False
-    keybindNum = 0
-    directionBinds = ["<Up>","<Down>","<Left>","<Right>"]
-    bgColour = "#cbf7e6"
-    previousBind = ""
 
 #---------------------------------------------- SETTINGS FUNCTIONS --------------------------------------------------------------------
 
@@ -200,6 +203,7 @@ def updateSettings(updateType):
         window.bind(directionBinds[1], downDirection)
         window.bind(directionBinds[2], leftDirection)
         window.bind(directionBinds[3], rightDirection)
+        window.bind("<Escape>", pause)
         window.bind("<Key>", updateKeybind)
 
 def changeBackground(bgNum):
@@ -262,7 +266,7 @@ def initialiseGame():
     xDirection = 7
     yDirection = 0
     player = gameCanvas.create_rectangle(930, 510, 990, 570, fill="light blue", outline="black")
-    scoreText = gameCanvas.create_text(1800, 30, text="Score: " + str(numBalls), font=("Comic Sans MS", 20, "bold"))
+    scoreText = gameCanvas.create_text(1800, 30, text="Score: " + str(time), font=("Comic Sans MS", 20, "bold"))
     countdownText = gameCanvas.create_text(960, 540, text="3", font=("Comic Sans MS", 75, "bold"), state="normal")
 
     # Start with 1 ball
@@ -296,13 +300,17 @@ def gameLoop():
         gameCanvas.move(player, xDirection, yDirection)
         moveBalls()
         checkPlayerCrash()
-        sleep(0.005)
-        time += 0.005
+        sleep(0.01)
+        time += 0.01
+        gameCanvas.itemconfig(scoreText, text="Score: " + str(time))
         window.update()
 
     # Go to game over screen once game is finished
     finalScoreLabel.config(text="You scored " + str(numBalls) + " points!")
     gameOverSwap()
+
+def pause():
+    pass
 
 #---------------------------------------------- BALL FUNCTIONS -----------------------------------------------------------------------
 
@@ -353,7 +361,7 @@ def createBall():
     
     # Increment number of balls
     numBalls += 1
-    gameCanvas.itemconfig(scoreText, text="Score: " + str(numBalls))
+    #gameCanvas.itemconfig(scoreText, text="Score: " + str(numBalls)) <-- REENABLE AFTER TESTING TIMING
 
 def moveBalls():
     '''Responsible for checking collisions with the wall, between balls and the player, and moving each ball.'''
