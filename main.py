@@ -497,7 +497,7 @@ def gameLoop():
     while activeGame:
         gameCanvas.move(player, playerDirectionX, playerDirectionY)
         moveBalls()
-        checkPlayerCrash()
+        checkPlayerCollision()
         sleep(0.005)
         time += 0.005
         score += 0.03
@@ -539,6 +539,10 @@ def slowTime():
 
 # INCREASE SCORE AFTER COLLECTING POWER UP
 def increaseScore():
+    pass
+
+# DISABLE COLLISION DETECTION
+def invincible():
     pass
 
 #---------------------------------------------- BALL FUNCTIONS -----------------------------------------------------------------------
@@ -648,21 +652,21 @@ def rightDirection(event):
 
 #---------------------------------------------- END GAME FUNCTIONS --------------------------------------------------------
 
-def checkPlayerCrash():
+def checkPlayerCollision():
     '''Checks if the player is touching a ball or has collided with the wall, if so it ends the game.'''
-    global activeGame
-
-    # Check if player has collided with wall
+    # Check if player has collided with wall, even with invincibility cheat on
+    global activeGame, cheats
     pos = gameCanvas.coords(player)
     if pos[3] > 1080 or pos[1] < 0 or pos[2] > 1920 or pos[0] < 0:
         activeGame = False
 
-    # Check if player has collided with any ball
-    for i in range(len(balls)):
-        pos2 = gameCanvas.coords(balls[i])
-        if pos[0] < pos2[2] and pos[2] > pos2[0] and pos[1] < pos2[3] and pos[3] > pos2[1] \
-        or pos[0] > pos2[2] and pos[2] < pos2[0] and pos[1] > pos2[3] and pos[3] < pos2[1]: # Need to check if either side of player has collided
-            activeGame = False
+    # Only check if player has collided with any ball if invincibility is disabled
+    if cheats[1] == False:
+        for i in range(len(balls)):
+            pos2 = gameCanvas.coords(balls[i])
+            if pos[0] < pos2[2] and pos[2] > pos2[0] and pos[1] < pos2[3] and pos[3] > pos2[1] \
+            or pos[0] > pos2[2] and pos[2] < pos2[0] and pos[1] > pos2[3] and pos[3] < pos2[1]: # Need to check if either side of player has collided
+                activeGame = False
 
 #---------------------------------------------- MAIN PROGRAM --------------------------------------------------------
 
