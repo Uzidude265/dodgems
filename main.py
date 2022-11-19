@@ -1,4 +1,4 @@
-from tkinter import Tk, Frame, Button as Btn, Label, PhotoImage as Image, Canvas, Checkbutton as CheckBtn, ttk
+from tkinter import Tk, Frame, Button as Btn, Label, PhotoImage as Image, Canvas, Checkbutton as CheckBtn, ttk, Entry
 from time import sleep
 from random import randint
 
@@ -19,14 +19,14 @@ def initialiseMenu():
     triggeredKeybindChange = False # Checks if player clicked button to change keybind
     keybindNum = 0
     controls = ["<Up>","<Down>","<Left>","<Right>","<Control_L>"] # Initial controls
-    bgColour = "#cbf7e6"
-    previousBind = ""
+    bgColour = "#cbf7e6" # Initial background colour
+    previousBind = "" # Used when unbinding previous key
     howToPlayText = "Dodge the never-ending balls as long as you can!\nThe colour of the balls indicates their speed.\n\n(Black = Slow, Blue = Medium, Purple = Fast, Red = Very Fast)\n\nEvery 3 seconds, a new ball gets added at the sides, so watch out!\nYour final score is the number of balls you ended with.\n\nGood Luck!"
     cheatCode = "" # Keeps track of keys pressed to check if they enter a cheat code
     cheats = [False, False] # Checks what cheats are enabled
     bossEnabled = False # Checks if the boss frame is active or not
 
-    # Create frames for each page
+    # FRAMES
     global homeFrame, settingsFrame, leaderboardFrame, infoFrame, gameOverFrame, bgFrame, keybindsFrame, cheatsFrame, bossFrame
     homeFrame = Frame(window)
     settingsFrame = Frame(window)
@@ -38,7 +38,7 @@ def initialiseMenu():
     cheatsFrame = Frame(window)
     bossFrame = Frame(window)
 
-    # Create all widgets for the home frame
+    # HOME FRAME WIDGETS
     global logo
     logo = Image(file="Dodgems.png")
     homeLabel = Label(homeFrame, image=logo, highlightthickness=10)
@@ -46,9 +46,9 @@ def initialiseMenu():
     settingsBtn = Btn(homeFrame, width=25, height=1, text="Settings", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:swapFrames(1))
     leaderboardBtn = Btn(homeFrame, width=25, height=1, text="Leaderboard", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:swapFrames(4))
     infoBtn = Btn(homeFrame, width=25, height=1, text="How to Play", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:swapFrames(5))
-    exitBtn = Btn(homeFrame, width=25, height=1, text="Exit", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=window.destroy)
+    exitBtn = Btn(homeFrame, width=25, height=1, text="Exit", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=updateLeaderboardFile)
 
-    # Pack all widgets on the home frame
+    # HOME FRAME PACKING
     homeLabel.pack(side="top", pady=(130, 0))
     playBtn.pack(side="top", pady=(120, 0))
     settingsBtn.pack(side="top", pady=(20, 0))
@@ -56,7 +56,7 @@ def initialiseMenu():
     infoBtn.pack(side="top", pady=(20, 0))
     exitBtn.pack(side="top", pady=(20, 0))
 
-    # Create all widgets for the settings frame
+    # SETTINGS FRAME WIDGETS
     global cheatsBtn
     settingsLabel = Label(settingsFrame, width=30, height=4, bg="pink", text="SETTINGS", font=("Comic Sans MS", 20, "bold"), borderwidth=3, relief="solid")
     bgBtn = Btn(settingsFrame, width=25, height=1, text="Change Background Colour", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:swapFrames(2))
@@ -64,14 +64,14 @@ def initialiseMenu():
     cheatsBtn = Btn(settingsFrame, width=25, height=1, text="Cheats", bg="red", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=None)
     settingsHomeBtn = Btn(settingsFrame, width=25, height=1, text="Home", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:swapFrames(0))
 
-    # Pack all buttons on the setting frame
+    # SETTINGS FRAME PACKING
     settingsLabel.pack(side="top", pady=(150, 0))
     bgBtn.pack(side="top", pady=(130, 0))
     keybindsBtn.pack(side="top", pady=(20, 0))
     cheatsBtn.pack(side="top", pady=(20, 0))
     settingsHomeBtn.pack(side="top", pady=(170, 0))
 
-    # Create all widgets for the background colour frame
+    # BACKGROUND COLOUR FRAME
     bgLabel = Label(bgFrame, width=30, height=4, bg="pink", text="CHANGE BACKGROUND COLOUR", font=("Comic Sans MS", 20, "bold"), borderwidth=3, relief="solid")
     greenBtn = Btn(bgFrame, width=25, height=1, text="Green", bg="#cbf7e6", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:changeBackground(0))
     redBtn = Btn(bgFrame, width=25, height=1, text="Red", bg="#edd3dc", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:changeBackground(1))
@@ -79,7 +79,7 @@ def initialiseMenu():
     yellowBtn = Btn(bgFrame, width=25, height=1, text="Yellow", bg="#fffcc2", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:changeBackground(3))
     bgSettingsBtn = Btn(bgFrame, width=25, height=1, text="Back to Settings", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:swapFrames(1))
 
-    # Pack all buttons on the background colour frame
+    # BACKGROUND COLOUR PACKING
     bgLabel.pack(side="top", pady=(150, 0))
     greenBtn.pack(side="top", pady=(110, 0))
     redBtn.pack(side="top", pady=(20, 0))
@@ -87,7 +87,7 @@ def initialiseMenu():
     yellowBtn.pack(side="top", pady=(20, 0))
     bgSettingsBtn.pack(side="top", pady=(120, 0))
 
-    # Create all widgets for the keybind frame
+    # KEYBIND FRAME WIDGETS
     global upBtn, downBtn, leftBtn, rightBtn, keybindsSettingsBtn, keybindsPromptLabel
     keybindsLabel = Label(keybindsFrame, width=30, height=4, bg="pink", text="CHANGE KEYBINDS", font=("Comic Sans MS", 20, "bold"), borderwidth=3, relief="solid")
     keybindsPromptLabel = Label(keybindsFrame, width=50, height=2, bg="pink", text="Click a keybind to change", font=("Comic Sans MS", 15, "bold"), borderwidth=3, relief="solid")
@@ -96,8 +96,9 @@ def initialiseMenu():
     leftBtn = Btn(keybindsFrame, width=25, height=1, text="Left: Left", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:setKeybindChange(2))
     rightBtn = Btn(keybindsFrame, width=25, height=1, text="Right: Right", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:setKeybindChange(3))
     keybindsSettingsBtn = Btn(keybindsFrame, width=25, height=1, text="Back to Settings", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:swapFrames(1))
+    # NEED TO ADD EXTRA BUTTON FOR BOSS KEY
 
-    # Pack all buttons on the keybind frame
+    # KEYBIND FRAME PACKING
     keybindsLabel.pack(side="top", pady=(150, 0))
     keybindsPromptLabel.pack(side="top", pady=(30, 0))
     upBtn.pack(side="top", pady=(60, 0))
@@ -106,53 +107,54 @@ def initialiseMenu():
     rightBtn.pack(side="top", pady=(20, 0))    
     keybindsSettingsBtn.pack(side="top", pady=(70, 0))
 
-    # Create all widgets for the cheats frame
+    # CHEATS FRAME WIDGETS
     cheatsLabel = Label(cheatsFrame, width=30, height=4, bg="pink", text="CHEATS", font=("Comic Sans MS", 20, "bold"), borderwidth=3, relief="solid")
     smallerPlayerBtn = CheckBtn(cheatsFrame, width=25, height=1, text="Smaller Player", bg="light blue", activebackground="light blue", font=("Comic Sans MS", 15, "bold"), command=lambda:changeCheats(0))
     invincibility = CheckBtn(cheatsFrame, width=25, height=1, text="Invincible", bg="light blue", activebackground="light blue", font=("Comic Sans MS", 15, "bold"), command=lambda:changeCheats(1))
     cheatsHomeBtn = Btn(cheatsFrame, width=25, height=1, text="Back to Settings", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:swapFrames(1))
 
-    # Pack all buttons on the cheats frame
+    # CHEATS FRAME PACKING
     cheatsLabel.pack(side="top", pady=(150, 0))
     smallerPlayerBtn.pack(side="top", pady=(150, 0))
     invincibility.pack(side="top", pady=(20, 0))
     cheatsHomeBtn.pack(side="top", pady=(200, 0))
 
-    # Create the leaderboard
-    createLeaderboard()
-
-    # Create all widgets for the leaderboard frame
+    # LEADERBOARD FRAME WIDGETS
     leaderboardLabel = Label(leaderboardFrame, width=30, height=4, bg="pink", text="LEADERBOARD", font=("Comic Sans MS", 20, "bold"), borderwidth=3, relief="solid")
     leaderboardHomeBtn = Btn(leaderboardFrame, width=25, height=1, text="Home", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:swapFrames(0))
+    createLeaderboard()
 
-    # Pack all widgets for the leaderboard frame
+    # LEADERBOARD FRAME PACKING
     leaderboardLabel.pack(side="top", pady=(150, 0))
     leaderboard.pack(side="top", pady=(50, 0))
     leaderboardHomeBtn.pack(side="top", pady=(60, 0))
 
-    # Create all widgets for the info frame
+    # INFO FRAME WIDGETS
     infoLabel = Label(infoFrame, width=30, height=4, bg="pink", text="HOW TO PLAY", font=("Comic Sans MS", 20, "bold"), borderwidth=3, relief="solid")
     howToPlayLabel = Label(infoFrame, width=60, height=12, bg="pink", text=howToPlayText, font=("Comic Sans MS", 15, "bold"), borderwidth=3, relief="solid")
     infoHomeBtn = Btn(infoFrame, width=25, height=1, text="Home", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:swapFrames(0))
 
-    # Pack all widgets for the info frame
+    # INFO FRAME PACKING
     infoLabel.pack(side="top", pady=(150, 0))
     howToPlayLabel.pack(side="top", pady=(50, 0))
     infoHomeBtn.pack(side="top", pady=(90, 0))
 
-    # Create all widgets for the game over screen
-    global finalScoreLabel
+    # GAME OVER FRAME WIDGETS
+    global finalScoreLabel, nameInput, submitBtn
     gameOverLabel = Label(gameOverFrame, width=30, height=4, bg="pink", text="GAME OVER!", font=("Comic Sans MS", 20, "bold"), borderwidth=3, relief="solid")
-    finalScoreLabel = Label(gameOverFrame, width=30, height=3, bg="pink", text="", font=("Comic Sans MS", 18, "bold"), borderwidth=3, relief="solid")
+    finalScoreLabel = Label(gameOverFrame, width=30, height=5, bg="pink", text="", font=("Comic Sans MS", 18, "bold"), borderwidth=3, relief="solid")
+    nameInput = Entry(gameOverFrame, width=30, bg="#aeeafc", font=("Comic Sans MS", 20, "bold"), justify="center")
+    submitBtn = Btn(gameOverFrame, width=25, height=1, text="Submit Name", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=addToLeaderboard)
     gameOverHomeBtn = Btn(gameOverFrame, width=25, height=1, text="Home", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:swapFrames(0))
-    # NEED TO ADD ENTRY OPTION TO STORE PLAYERS NAME
 
-    # Pack all widgets for the game over frame
+    # GAME OVER FRAME PACKING
     gameOverLabel.pack(side="top", pady=(150, 0))
-    finalScoreLabel.pack(side="top", pady=(180, 0))
-    gameOverHomeBtn.pack(side="top", pady=(200, 0))
+    finalScoreLabel.pack(side="top", pady=(50, 0))
+    nameInput.pack(side="top", pady=(70, 0))
+    submitBtn.pack(side="top", pady=(70, 0))
+    gameOverHomeBtn.pack(side="top", pady=(20, 0))
 
-    # Create and pack the boss key image
+    # BOSS KEY FRAME WIDGETS AND PACKING
     global bossImage
     bossImage = Image(file="BossKeyImage.png")
     bossKeyImage = Label(bossFrame, image=bossImage)
@@ -187,6 +189,7 @@ def swapFrames(frameNum):
     elif frameNum == 6: # Swap to the game over frame
         gameCanvas.pack_forget()
         gameOverFrame.pack(fill="both", expand=True)
+        submitBtn.configure(bg="light blue", relief="raised", command=addToLeaderboard) # Reset submit button
     elif frameNum == 7: # Swap to the cheats frame
         settingsFrame.pack_forget()
         cheatsFrame.pack(fill="both", expand=True)
@@ -201,49 +204,6 @@ def swapFrames(frameNum):
 
 #---------------------------------------------- SETTINGS FUNCTIONS --------------------------------------------------------------------
 
-def updateSettings(updateType):
-    '''Update the settings such as key binds and background colour.'''
-    # Update colours of pages
-    if updateType == 0 or updateType == 2:
-        homeFrame.config(bg=bgColour)
-        settingsFrame.config(bg=bgColour)
-        leaderboardFrame.config(bg=bgColour)
-        infoFrame.config(bg=bgColour)
-        gameOverFrame.config(bg=bgColour)
-        bgFrame.config(bg=bgColour)
-        keybindsFrame.config(bg=bgColour)
-        cheatsFrame.config(bg=bgColour)
-
-    # Update button text if they updated keybind and update the bind
-    elif updateType == 1:
-        global upBtn, downBtn, leftBtn, rightBtn, controls, keybindNum, previousBind
-        window.unbind(previousBind)
-        tempText = controls[keybindNum]
-        tempText = tempText[1:len(tempText)-1] # Get rid of < >
-        if keybindNum == 0:
-            upBtn.config(text="Up: " + tempText)
-            window.bind(controls[keybindNum], upDirection)
-        elif keybindNum == 1:
-            downBtn.config(text="Down: " + tempText)
-            window.bind(controls[keybindNum], downDirection)
-        elif keybindNum == 2:
-            leftBtn.config(text="Left: " + tempText)
-            window.bind(controls[keybindNum], leftDirection)
-        else:
-            rightBtn.config(text="Right: " + tempText)
-            window.bind(controls[keybindNum], rightDirection)
-    
-    # If initialising settings, bind the keys
-    if updateType == 2:
-        window.bind(controls[0], upDirection)
-        window.bind(controls[1], downDirection)
-        window.bind(controls[2], leftDirection)
-        window.bind(controls[3], rightDirection)
-        window.bind(controls[4], lambda a=8: swapFrames(a))
-        window.bind("<BackSpace>", cancelCheatCode)
-        window.bind("<Escape>", pause)
-        window.bind("<Key>", updateKeybind)
-
 def changeBackground(bgNum):
     '''Changes the colour of the backgrounds according to user input'''
     global bgColour
@@ -255,50 +215,85 @@ def changeBackground(bgNum):
         bgColour = "#8ec8fa"
     else:
         bgColour = "#fffcc2"
-    updateSettings(0) # Update settings to confirm change
+    
+    # Update each frame
+    homeFrame.configure(bg=bgColour)
+    settingsFrame.configure(bg=bgColour)
+    leaderboardFrame.configure(bg=bgColour)
+    infoFrame.configure(bg=bgColour)
+    gameOverFrame.configure(bg=bgColour)
+    bgFrame.configure(bg=bgColour)
+    keybindsFrame.configure(bg=bgColour)
+    cheatsFrame.configure(bg=bgColour)
+
+def initialiseKeybinds():
+    '''Bind the initial keybinds with their respective functions.'''
+    window.bind(controls[0], upDirection)
+    window.bind(controls[1], downDirection)
+    window.bind(controls[2], leftDirection)
+    window.bind(controls[3], rightDirection)
+    window.bind(controls[4], lambda a=8: swapFrames(a))
+    window.bind("<BackSpace>", cancelCheatCode)
+    window.bind("<Escape>", pause)
+    window.bind("<Key>", updateKeybind)
 
 def setKeybindChange(tempNum):
     '''Sets the boolean state to true so that the player can then press the key and update their keybind.'''
     global triggeredKeybindChange, keybindNum, keybindsSettingsBtn
-    keybindsPromptLabel.config(text="Press the key you want to bind:")
-    triggeredKeybindChange = True
+    keybindsPromptLabel.configure(text="Press the key you want to bind:")
+    triggeredKeybindChange = True # Set flag saying user wants to change their keybind
     keybindNum = tempNum
-    keybindsSettingsBtn.config(text="Cancel", command=cancelKeybindChange) # Change button to a cancel button
+    keybindsSettingsBtn.configure(text="Cancel", command=cancelKeybindChange) # Change button to a cancel button
 
 def updateKeybind(event):
     '''Updates the keybind as long as they intended to, else adds the keypress to the cheat code buffer.'''
-    global controls, triggeredKeybindChange, keybindsPromptLabel, previousBind, keybindsSettingsBtn
-    # Only update if they pressed a button beforehand
-    if triggeredKeybindChange == True:
-        previousBind = controls[keybindNum] # Remember previous bind to unbind later
+    global controls, triggeredKeybindChange, keybindsPromptLabel, keybindsSettingsBtn
+    if triggeredKeybindChange == False:
+        updateCheatCode(event.keysym) # Add keypress to cheat code
+    else: # Only update if they pressed a button beforehand
+        window.unbind(controls[keybindNum])
         controls[keybindNum] = "<" + event.keysym + ">" # Store as correct key format
         triggeredKeybindChange = False # Reset variables
-        keybindsPromptLabel.config(text="Click a keybind to change")
-        keybindsSettingsBtn.config(text="Back to Settings", command=lambda:swapFrames(1)) # Change button back to normal
-        updateSettings(1) # Update settings to confirm change
-    else:
-        updateCheatCode(event.keysym) # Add keypress to cheat code
+        keybindsPromptLabel.configure(text="Click a keybind to change") # Change label to original message
+        keybindsSettingsBtn.configure(text="Back to Settings", command=lambda:swapFrames(1)) # Change button back to normal
+        tempText = controls[keybindNum]
+        tempText = tempText[1:len(tempText)-1] # Get rid of < >
+
+        # Update corresponding button and bind
+        if keybindNum == 0:
+            upBtn.configure(text="Up: " + tempText)
+            window.bind(controls[keybindNum], upDirection)
+        elif keybindNum == 1:
+            downBtn.configure(text="Down: " + tempText)
+            window.bind(controls[keybindNum], downDirection)
+        elif keybindNum == 2:
+            leftBtn.configure(text="Left: " + tempText)
+            window.bind(controls[keybindNum], leftDirection)
+        else:
+            rightBtn.configure(text="Right: " + tempText)
+            window.bind(controls[keybindNum], rightDirection)
 
 def cancelKeybindChange():
     '''Used if the user decides not to bind a key after clicking a button.'''
     global triggeredKeybindChange, keybindsPromptLabel, keybindsSettingsBtn
     triggeredKeybindChange = False #Reset variables
-    keybindsPromptLabel.config(text="Click a keybind to change")
-    keybindsSettingsBtn.config(text="Back to Settings", command=lambda:swapFrames(1)) # Change button back to normal
+    keybindsPromptLabel.configure(text="Click a keybind to change")
+    keybindsSettingsBtn.configure(text="Back to Settings", command=lambda:swapFrames(1)) # Change button back to normal
 
 #---------------------------------------------- LEADERBOARD FUNCTIONS -----------------------------------------------------------------------
+
+#                                 ADD ABILITY TO ADD NAME AND SCORE FROM GAME OVER MENU
 
 def createLeaderboard():
     '''Creates and formats the leaderboard with headings.'''
     global leaderboard
-    style = ttk.Style()
-    style.configure("Treeview", font=("Comic Sans MS", 15, "bold"), rowheight=35)
-    style.configure("Treeview.Heading", font=("Comic Sans MS", 15, "bold"))
-    leaderboard = ttk.Treeview(leaderboardFrame, columns=("name", "stage", "score"), show="headings")
-    leaderboard.column("name", anchor="center")
+    style = ttk.Style() # Configure style of leaderboard
+    style.theme_use("clam")
+    style.configure("Treeview", fieldbackground="pink", font=("Comic Sans MS", 15, "bold"), rowheight=35)
+    style.configure("Treeview.Heading", background="pink", font=("Comic Sans MS", 20, "bold"))
+    leaderboard = ttk.Treeview(leaderboardFrame, columns=("name", "score"), show="headings")
+    leaderboard.column("name", anchor="center") # Give leaderboard headings
     leaderboard.heading("name", text="Name")
-    leaderboard.column("stage", anchor="center")
-    leaderboard.heading("stage", text="Stage")
     leaderboard.column("score", anchor="center")
     leaderboard.heading("score", text="Score")
     populateLeaderboard() # Fill the leaderboard
@@ -307,15 +302,74 @@ def populateLeaderboard():
     '''Reads the text file 'leaderboard.txt' and populates the leaderboard.'''
     leaderboardFile = open("leaderboard.txt", "r")
     tempName = leaderboardFile.readline().strip()
+    leaderboard.tag_configure("odd", background="pink") # Create tags for rows
+    leaderboard.tag_configure("even", background="#fca7f5")
     rowNum = 0
     while tempName != "": # Loop through the file until end of file is reached
-        tempStage = leaderboardFile.readline().strip()
         tempScore = leaderboardFile.readline().strip()
-        leaderboard.insert("", "end", iid=rowNum, values=(tempName, tempStage, tempScore))
+        if rowNum % 2 == 0:
+            leaderboard.insert("", "end", iid=rowNum, values=(tempName, tempScore), tags=("even",)) # NEEDS FIXING, DOESN'T CHANGE COLOUR
+        else:
+            leaderboard.insert("", "end", iid=rowNum, values=(tempName, tempScore), tags=("odd",))
         rowNum += 1
         tempName = leaderboardFile.readline().strip()
+    leaderboardFile.close()
+
+def addToLeaderboard():
+    '''Take user input and add it to the leaderboard.'''
+    # Check if entry field is empty
+    name = nameInput.get()
+    if name == "":
+        finalScoreLabel.configure(text="Field is empty.")
+    else:
+        finalScoreLabel.configure(text="Score Submitted!")
+        submitBtn.configure(bg="red", relief="sunken", command=lambda:finalScoreLabel.configure(text="Already submitted your score."))
+        nameInput.delete(0, "end")
+
+        # Get all entries from the leaderboard
+        treeviewData = []
+        for line in leaderboard.get_children():
+            tempArray = []
+            for value in leaderboard.item(line)["values"]:
+                tempArray.append(value)
+            treeviewData.append(tempArray)
+        
+        # Empty the leaderboard
+        numOfEntries = 0
+        for line in leaderboard.get_children():
+            numOfEntries += 1
+            leaderboard.delete(line)
+        
+        # Repopulate leaderboard with new entry
+        newEntry = [name, str(score)]
+        placed = False
+        for line in range(numOfEntries):
+            if score < int(treeviewData[line][1]):
+                leaderboard.insert("", "end", iid=line, values=(treeviewData[line]))
+            else:
+                if placed == False:
+                    leaderboard.insert("", "end", iid=line, values=(newEntry))
+                    placed = True
+                else:
+                    leaderboard.insert("", "end", iid=line, values=(treeviewData[line-1]))
+
+        if placed == False:
+            leaderboard.insert("", "end", iid=numOfEntries, values=(newEntry))
+        else:
+            leaderboard.insert("", "end", iid=numOfEntries, values=(treeviewData[numOfEntries-1]))
+
+def updateLeaderboardFile():
+    '''Writes the current state of the leaderboard to the file to save it for next time.'''
+    leaderboardFile = open("leaderboard.txt", "w")
+    for entry in leaderboard.get_children():
+        for value in leaderboard.item(entry)["values"]:
+            leaderboardFile.write(str(value)+"\n") # Write every entry to the text file
+    leaderboardFile.close()
+    window.destroy() # Close the game
 
 #---------------------------------------------- CHEAT CODE FUNCTIONS -----------------------------------------------------------------------
+
+#                          ONLY UPDATE LEADERBOARD IF USING NO CHEATS BY CHECKING 'CHEATS' ARRAY
 
 def cancelCheatCode(event):
     '''Resets the cheat code for misinputs.'''
@@ -326,9 +380,8 @@ def updateCheatCode(keyName):
     '''Updates the cheat code and then checks if the player has inputted it correctly.'''
     global cheatCode, cheatsBtn
     cheatCode += keyName
-    print(keyName)
     if cheatCode == "unlockcheats":
-        cheatsBtn.config(command=lambda:swapFrames(7), bg="light blue")
+        cheatsBtn.configure(command=lambda:swapFrames(7), bg="light blue")
 
 def changeCheats(cheatNum):
     '''Enables or disables the cheat that the player chose.'''
@@ -372,20 +425,20 @@ def initialiseGame():
     createBall()
     
     # Start the countdown, then start the game
-    countdown()
+    #countdown()
     gameLoop()
 
 def countdown():
     '''Short countdown before the game starts'''
     global countdownText
     for i in range(3, 0, -1):
-        gameCanvas.itemconfig(countdownText, text=str(i))
+        gameCanvas.itemconfigure(countdownText, text=str(i))
         window.update()
         sleep(1)
-    gameCanvas.itemconfig(countdownText, text="Go!")
+    gameCanvas.itemconfigure(countdownText, text="Go!")
     window.update()
     sleep(1)
-    gameCanvas.itemconfig(countdownText, state="hidden")
+    gameCanvas.itemconfigure(countdownText, state="hidden")
 
 def gameLoop():
     '''The main game loop that repeats until the game ends, then switches to the game over screen.'''
@@ -402,7 +455,7 @@ def gameLoop():
         time += 0.005
         score += 0.03
         displayScore = int(score)
-        gameCanvas.itemconfig(scoreText, text="Score: " + str(displayScore))
+        gameCanvas.itemconfigure(scoreText, text="Score: " + str(displayScore))
         if time > 1:
             createBall()
             time = 0
@@ -412,7 +465,7 @@ def gameLoop():
 
     # Go to game over screen once game is finished
     score = int(score)
-    finalScoreLabel.config(text="You scored " + str(score) + " points!")
+    finalScoreLabel.configure(text="You scored " + str(score) + " points!\n\nEnter your name to save your score\nor exit to the menu")
     swapFrames(6)
 
 def pause(event):                                    # NEEDS FIXING, DOESN'T PAUSE THE GAME, JUST SHOWS LOGO
@@ -420,16 +473,26 @@ def pause(event):                                    # NEEDS FIXING, DOESN'T PAU
     global paused
     if paused:
         paused = False
-        gameCanvas.itemconfig(pausedBackground, state="hidden")
-        gameCanvas.itemconfig(pausedText, state="hidden")
+        gameCanvas.itemconfigure(pausedBackground, state="hidden")
+        gameCanvas.itemconfigure(pausedText, state="hidden")
     else:
         paused = True
-        gameCanvas.itemconfig(pausedBackground, state="normal")
-        gameCanvas.itemconfig(pausedText, state="normal")
+        gameCanvas.itemconfigure(pausedBackground, state="normal")
+        gameCanvas.itemconfigure(pausedText, state="normal")
     print(paused)
 
 #def bossKey():
 #    pause()
+
+#---------------------------------------------- POWER UP FUNCTIONS -----------------------------------------------------------------------
+
+# HALF SPEED VALUES AND DOUBLE AFTERWARDS
+def slowTime():
+    pass
+
+# INCREASE SCORE AFTER COLLECTING POWER UP
+def increaseScore():
+    pass
 
 #---------------------------------------------- BALL FUNCTIONS -----------------------------------------------------------------------
 
@@ -470,13 +533,13 @@ def createBall():
     averageSpeed = (abs(tempX) + abs(tempY))/2
     global numBalls
     if averageSpeed >= 8:
-        gameCanvas.itemconfig(balls[numBalls], fill="#ff0000", outline="black")
+        gameCanvas.itemconfigure(balls[numBalls], fill="#ff0000", outline="black")
     elif averageSpeed >= 7:
-        gameCanvas.itemconfig(balls[numBalls], fill="#d303fc", outline="black")
+        gameCanvas.itemconfigure(balls[numBalls], fill="#d303fc", outline="black")
     elif averageSpeed >= 5:
-        gameCanvas.itemconfig(balls[numBalls], fill="blue", outline="black")
+        gameCanvas.itemconfigure(balls[numBalls], fill="blue", outline="black")
     else:
-        gameCanvas.itemconfig(balls[numBalls], fill="black", outline="black")
+        gameCanvas.itemconfigure(balls[numBalls], fill="black", outline="black")
     
     # Increment number of balls
     numBalls += 1
@@ -558,7 +621,8 @@ def checkPlayerCrash():
 
 configureWindow() # Set up the window
 initialiseMenu() # Set up the menu
-updateSettings(2) # Use first time settings
+changeBackground(0) # Set up initial background colour
+initialiseKeybinds() # Set up the initial keybinds
 homeFrame.pack(fill="both", expand=True) # Start at the home page
 
 window.mainloop()
