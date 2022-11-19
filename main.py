@@ -1,3 +1,4 @@
+# SCREEN RESOLUTION: 1920x1080
 from tkinter import Tk, Frame, Button as Btn, Label, PhotoImage as Image, Canvas, Checkbutton as CheckBtn, ttk, Entry
 from time import sleep
 from random import randint
@@ -19,7 +20,7 @@ def initialiseMenu():
     initialiseSettings()
 
     # FRAMES
-    global homeFrame, settingsFrame, leaderboardFrame, infoFrame, gameOverFrame, bgFrame, keybindsFrame, cheatsFrame, bossFrame
+    global homeFrame, settingsFrame, leaderboardFrame, infoFrame, gameOverFrame, bgFrame, keybindsFrame, cheatsFrame, bossFrame, pauseFrame
     homeFrame = Frame(window)
     settingsFrame = Frame(window)
     leaderboardFrame = Frame(window)
@@ -29,6 +30,7 @@ def initialiseMenu():
     keybindsFrame = Frame(window)
     cheatsFrame = Frame(window)
     bossFrame = Frame(window)
+    pauseFrame = Frame(window)
 
     # HOME FRAME WIDGETS
     global logo
@@ -139,6 +141,18 @@ def initialiseMenu():
     howToPlayLabel.pack(side="top", pady=(50, 0))
     infoHomeBtn.pack(side="top", pady=(90, 0))
 
+    # PAUSE FRAME WIDGETS
+    pauseLabel = Label(pauseFrame, width=30, height=4, bg="pink", text="GAME PAUSED", font=("Comic Sans MS", 20, "bold"), borderwidth=3, relief="solid")
+    pauseInfoLabel = Label(pauseFrame, width=30, height=6, bg="pink", text="Press Esc to unpause.\nExit to the home menu or\nsave your current game.", font=("Comic Sans MS", 18, "bold"), borderwidth=3, relief="solid")
+    saveBtn = Btn(pauseFrame, width=25, height=1, text="Save Game", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=None)
+    pauseHomeBtn = Btn(pauseFrame, width=25, height=1, text="Home", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:swapFrames(0))
+
+    # PAUSE FRAME PACKING
+    pauseLabel.pack(side="top", pady=(150, 0))
+    pauseInfoLabel.pack(side="top", pady=(100, 0))
+    saveBtn.pack(side="top", pady=(100, 0))
+    pauseHomeBtn.pack(side="top", pady=(20, 0))
+
     # GAME OVER FRAME WIDGETS
     global finalScoreLabel, nameInput, submitBtn
     gameOverLabel = Label(gameOverFrame, width=30, height=4, bg="pink", text="GAME OVER!", font=("Comic Sans MS", 20, "bold"), borderwidth=3, relief="solid")
@@ -167,6 +181,7 @@ def swapFrames(frameNum):
         leaderboardFrame.pack_forget()
         infoFrame.pack_forget()
         gameOverFrame.pack_forget()
+        pauseFrame.pack_forget()
         homeFrame.pack(fill="both", expand=True)
         nameInput.delete(0, "end") # Disable entry box after going back home
         nameInput.configure(state="disabled") 
@@ -193,17 +208,41 @@ def swapFrames(frameNum):
         gameOverFrame.pack(fill="both", expand=True)
         submitBtn.configure(bg="light blue", relief="raised", command=addToLeaderboard) # Reset submit button
         nameInput.configure(state="normal") # Re-enable entry box
-    elif frameNum == 7: # Swap to the cheats frame
+    else: # Swap to the cheats frame
         settingsFrame.pack_forget()
         cheatsFrame.pack(fill="both", expand=True)
-    else: # Swap to the boss frame                      NEEDS FIXING, DOESN'T SHOW ABOVE CANVAS
-        global bossEnabled
+
+def bossKey(event):
+    '''Activates whenever the boss key is pressed and displays an unsuspecting image.'''
+    global gameActive, bossEnabled, paused, pauseFrameActive
+    if gameActive == False: # If at menu, place boss frame on top
         if bossEnabled == True:
-            bossFrame.place_forget()
             bossEnabled = False
+            bossFrame.place_forget()
         else:
-            bossFrame.place(x=0, y=0)
             bossEnabled = True
+            bossFrame.place(x=0, y=0)
+    elif gameActive == True and pauseFrameActive == False: # If game active, pause the game and hide gameCanvas
+        if bossEnabled == True:
+            bossEnabled = False
+            paused = False
+            bossFrame.pack_forget()
+            gameCanvas.pack(fill="both", expand=True)
+            gameLoop()
+        else:
+            bossEnabled = True
+            paused = True
+            gameCanvas.pack_forget()
+            bossFrame.pack(fill="both", expand=True)
+    elif pauseFrameActive == True: # Else if the pause frame is showing, replace with boss frame
+        if bossEnabled == True:
+            bossEnabled = False
+            bossFrame.place_forget()
+            pauseFrame.pack(fill="both", expand=True)
+        else:
+            bossEnabled = True
+            pauseFrame.pack_forget()
+            bossFrame.place(x=0, y=0)
 
 def exitGame():
     '''Save all settings and current leaderboard state, then close the game.'''
@@ -216,7 +255,7 @@ def exitGame():
 def initialiseSettings():
     '''Initialise all the settings and read settings.txt file to get saved settings.'''
     #Initialise unsaved settings
-    global triggeredKeybindChange, keybindNum, controls, bgColour, previousBind, howToPlayText, cheatCode, cheats, bossEnabled
+    global triggeredKeybindChange, keybindNum, controls, bgColour, previousBind, howToPlayText, cheatCode, cheats, bossEnabled, gameActive, paused, pauseFrameActive
     triggeredKeybindChange = False # Checks if player clicked button to change keybind
     keybindNum = 0
     previousBind = "" # Used when unbinding previous key
@@ -224,6 +263,9 @@ def initialiseSettings():
     cheatCode = "" # Keeps track of keys pressed to check if they enter a cheat code
     cheats = [False, False] # Checks what cheats are enabled
     bossEnabled = False # Checks if the boss frame is active or not
+    gameActive = False
+    paused = False
+    pauseFrameActive = False
 
     # Get saved settings from settings.txt file
     controls = []
@@ -233,7 +275,6 @@ def initialiseSettings():
         setting = settings.readline().strip()
         controls.append(setting)
     bgColour = settings.readline().strip()
-
     settings.close()
 
 def saveSettings():
@@ -260,6 +301,7 @@ def changeBackground(bgCode):
     bgFrame.configure(bg=bgColour)
     keybindsFrame.configure(bg=bgColour)
     cheatsFrame.configure(bg=bgColour)
+    pauseFrame.configure(bg=bgColour)
 
 def initialiseKeybinds():
     '''Bind the initial keybinds with their respective functions.'''
@@ -267,7 +309,7 @@ def initialiseKeybinds():
     window.bind(controls[1], downDirection)
     window.bind(controls[2], leftDirection)
     window.bind(controls[3], rightDirection)
-    window.bind(controls[4], lambda a=8: swapFrames(a))
+    window.bind(controls[4], bossKey)
     window.bind("<BackSpace>", cancelCheatCode)
     window.bind("<Escape>", pause)
     window.bind("<Key>", updateKeybind)
@@ -448,7 +490,7 @@ def initialiseGame():
     gameCanvas.pack(fill="both", expand=True)
 
     # Create all of the variables needed
-    global time, score, numBalls, balls, xSpeed, ySpeed, playerDirectionX, playerDirectionY, paused, player, scoreText, countdownText, pausedBackground, pausedText, bossImage
+    global time, score, numBalls, balls, xSpeed, ySpeed, playerDirectionX, playerDirectionY, gameActive, paused, abilities, player, scoreText, countdownText, pausedBackground, pausedText, bossImage
     time = 0
     score = 0
     numBalls = 0
@@ -457,27 +499,25 @@ def initialiseGame():
     ySpeed = []
     playerDirectionX = 7
     playerDirectionY = 0
-    paused = False 
+    abilities = [False, False, False, False] # Stores current state of abilities
     if cheats[0] == True: # If smaller player cheat is enabled, make smaller player
         xy = (950, 530, 970, 550)
     else:
         xy = (930, 510, 990, 570)
     player = gameCanvas.create_rectangle(xy, fill="light blue", outline="black")
     scoreText = gameCanvas.create_text(1800, 30, text="Score: " + str(score), font=("Comic Sans MS", 20, "bold"))
-    countdownText = gameCanvas.create_text(960, 540, text="3", font=("Comic Sans MS", 75, "bold"), state="normal")
+    countdownText = gameCanvas.create_text(960, 540, text="3", font=("Comic Sans MS", 75, "bold"))
     pausedBackground = gameCanvas.create_rectangle(850, 480, 100, 600, fill="pink", outline="black", state="hidden")
     pausedText = gameCanvas.create_text(960, 540, text="PAUSED\nPress Esc to resume.", font=("Comic Sans MS", 75, "bold"), state="hidden")
 
     # Start with 1 ball
     createBall()
-    
-    # Start the countdown, then start the game
-    countdown()
     gameLoop()
 
 def countdown():
     '''Short countdown before the game starts'''
     global countdownText
+    gameCanvas.itemconfigure(countdownText, state="normal")
     for i in range(3, 0, -1):
         gameCanvas.itemconfigure(countdownText, text=str(i))
         window.update()
@@ -489,12 +529,11 @@ def countdown():
 
 def gameLoop():
     '''The main game loop that repeats until the game ends, then switches to the game over screen.'''
-    # Keep track of if the game should loop again
-    global activeGame, time, score, paused
-    activeGame = True
-
     # Keep looping until player is hit
-    while activeGame:
+    global gameActive, time, score, paused
+    countdown() # Start countdown
+    gameActive = True
+    while gameActive and not paused:
         gameCanvas.move(player, playerDirectionX, playerDirectionY)
         moveBalls()
         checkPlayerCollision()
@@ -506,30 +545,29 @@ def gameLoop():
         if time > 1:
             createBall()
             time = 0
-        # while paused:                                NEEDS FIXING, CRASHES GAME
-        #    sleep(0.01)
         window.update()
 
-    # Go to game over screen once game is finished
-    score = int(score)
-    finalScoreLabel.configure(text="You scored " + str(score) + " points!\n\nEnter your name to save your score\nor exit to the menu")
-    swapFrames(6)
+    # Go to game over screen once game is finished only if loop wasn't finished by pause
+    if paused == False:
+        score = int(score)
+        finalScoreLabel.configure(text="You scored " + str(score) + " points!\n\nEnter your name to save your score\nor exit to the menu")
+        swapFrames(6)
 
-def pause(event):                                    # NEEDS FIXING, DOESN'T PAUSE THE GAME, JUST SHOWS LOGO
-    '''Pause or unpause the game, and display the paused logo.'''
-    global paused
-    if paused:
-        paused = False
-        gameCanvas.itemconfigure(pausedBackground, state="hidden")
-        gameCanvas.itemconfigure(pausedText, state="hidden")
-    else:
-        paused = True
-        gameCanvas.itemconfigure(pausedBackground, state="normal")
-        gameCanvas.itemconfigure(pausedText, state="normal")
-    print(paused)
-
-#def bossKey():
-#    pause()
+def pause(event):                                    
+    '''Pause or unpause the game, and display the paused frame.'''
+    global paused, pauseFrameActive, gameActive
+    if gameActive == True: # Only change paused state if playing game
+        if paused:
+            paused = False
+            pauseFrameActive = False
+            gameCanvas.pack(fill="both", expand=True) # Show game and hide pause frame
+            pauseFrame.pack_forget()
+            gameLoop()
+        else:
+            paused = True
+            pauseFrameActive = True
+            gameCanvas.pack_forget() # Hide game and show pause frame
+            pauseFrame.pack(fill="both", expand=True)
 
 #---------------------------------------------- POWER UP FUNCTIONS -----------------------------------------------------------------------
 
@@ -543,6 +581,10 @@ def increaseScore():
 
 # DISABLE COLLISION DETECTION
 def invincible():
+    pass
+
+# GET RID OF 3 BALLS
+def deleteAbility():
     pass
 
 #---------------------------------------------- BALL FUNCTIONS -----------------------------------------------------------------------
@@ -594,7 +636,6 @@ def createBall():
     
     # Increment number of balls
     numBalls += 1
-    #gameCanvas.itemconfig(scoreText, text="Score: " + str(numBalls)) <-- REENABLE AFTER TESTING TIMING
 
 def moveBalls():
     '''Responsible for checking collisions with the wall, between balls and the player, and moving each ball.'''
@@ -655,10 +696,10 @@ def rightDirection(event):
 def checkPlayerCollision():
     '''Checks if the player is touching a ball or has collided with the wall, if so it ends the game.'''
     # Check if player has collided with wall, even with invincibility cheat on
-    global activeGame, cheats
+    global gameActive, cheats
     pos = gameCanvas.coords(player)
     if pos[3] > 1080 or pos[1] < 0 or pos[2] > 1920 or pos[0] < 0:
-        activeGame = False
+        gameActive = False
 
     # Only check if player has collided with any ball if invincibility is disabled
     if cheats[1] == False:
@@ -666,7 +707,7 @@ def checkPlayerCollision():
             pos2 = gameCanvas.coords(balls[i])
             if pos[0] < pos2[2] and pos[2] > pos2[0] and pos[1] < pos2[3] and pos[3] > pos2[1] \
             or pos[0] > pos2[2] and pos[2] < pos2[0] and pos[1] > pos2[3] and pos[3] < pos2[1]: # Need to check if either side of player has collided
-                activeGame = False
+                gameActive = False
 
 #---------------------------------------------- MAIN PROGRAM --------------------------------------------------------
 
