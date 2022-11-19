@@ -425,7 +425,7 @@ def initialiseGame():
     createBall()
     
     # Start the countdown, then start the game
-    #countdown()
+    countdown()
     gameLoop()
 
 def countdown():
