@@ -82,7 +82,7 @@ def initialiseMenu():
     bgSettingsBtn.pack(side="top", pady=(120, 0))
 
     # KEYBIND FRAME WIDGETS
-    global upBtn, downBtn, leftBtn, rightBtn, keybindsSettingsBtn, keybindsPromptLabel
+    global upBtn, downBtn, leftBtn, rightBtn, bossKeyBtn, keybindsSettingsBtn, keybindsPromptLabel
     tempUp = controls[0] # Remove the < > from the controls to add to the corresponding button's text
     tempUp = tempUp[1:len(tempUp)-1]
     tempDown = controls[1]
@@ -91,35 +91,38 @@ def initialiseMenu():
     tempLeft = tempLeft[1:len(tempLeft)-1]
     tempRight = controls[3]
     tempRight = tempRight[1:len(tempRight)-1]
+    tempBossKey = controls[4]
+    tempBossKey = tempBossKey[1:len(tempBossKey)-1]
     keybindsLabel = Label(keybindsFrame, width=30, height=4, bg="pink", text="CHANGE KEYBINDS", font=("Comic Sans MS", 20, "bold"), borderwidth=3, relief="solid")
     keybindsPromptLabel = Label(keybindsFrame, width=50, height=2, bg="pink", text="Click a keybind to change", font=("Comic Sans MS", 15, "bold"), borderwidth=3, relief="solid")
     upBtn = Btn(keybindsFrame, width=25, height=1, text="Up: " + tempUp, bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:setKeybindChange(0))
     downBtn = Btn(keybindsFrame, width=25, height=1, text="Down: " + tempDown, bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:setKeybindChange(1))
     leftBtn = Btn(keybindsFrame, width=25, height=1, text="Left: " + tempLeft, bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:setKeybindChange(2))
     rightBtn = Btn(keybindsFrame, width=25, height=1, text="Right: " + tempRight, bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:setKeybindChange(3))
+    bossKeyBtn = Btn(keybindsFrame, width=25, height=1, text="Boss Key: " + tempBossKey, bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:setKeybindChange(4))
     keybindsSettingsBtn = Btn(keybindsFrame, width=25, height=1, text="Back to Settings", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:swapFrames(1))
-    # NEED TO ADD EXTRA BUTTON FOR BOSS KEY
 
     # KEYBIND FRAME PACKING
     keybindsLabel.pack(side="top", pady=(150, 0))
     keybindsPromptLabel.pack(side="top", pady=(30, 0))
-    upBtn.pack(side="top", pady=(60, 0))
-    downBtn.pack(side="top", pady=(20, 0))
-    leftBtn.pack(side="top", pady=(20, 0))
-    rightBtn.pack(side="top", pady=(20, 0))    
-    keybindsSettingsBtn.pack(side="top", pady=(70, 0))
+    upBtn.pack(side="top", pady=(50, 0))
+    downBtn.pack(side="top", pady=(10, 0))
+    leftBtn.pack(side="top", pady=(10, 0))
+    rightBtn.pack(side="top", pady=(10, 0))
+    bossKeyBtn.pack(side="top", pady=(10, 0)) 
+    keybindsSettingsBtn.pack(side="top", pady=(50, 0))
 
     # CHEATS FRAME WIDGETS
     cheatsLabel = Label(cheatsFrame, width=30, height=4, bg="pink", text="CHEATS", font=("Comic Sans MS", 20, "bold"), borderwidth=3, relief="solid")
-    smallerPlayerBtn = CheckBtn(cheatsFrame, width=25, height=1, text="Smaller Player", bg="light blue", activebackground="light blue", font=("Comic Sans MS", 15, "bold"), command=lambda:changeCheats(0))
-    invincibility = CheckBtn(cheatsFrame, width=25, height=1, text="Invincible", bg="light blue", activebackground="light blue", font=("Comic Sans MS", 15, "bold"), command=lambda:changeCheats(1))
+    smallerPlayerBtn = CheckBtn(cheatsFrame, width=25, height=2, text="Smaller Player", bg="light blue", activebackground="light blue", font=("Comic Sans MS", 15, "bold"), command=lambda:changeCheats(0))
+    invincibility = CheckBtn(cheatsFrame, width=25, height=2, text="Invincible", bg="light blue", activebackground="light blue", font=("Comic Sans MS", 15, "bold"), command=lambda:changeCheats(1))
     cheatsHomeBtn = Btn(cheatsFrame, width=25, height=1, text="Back to Settings", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:swapFrames(1))
 
     # CHEATS FRAME PACKING
     cheatsLabel.pack(side="top", pady=(150, 0))
-    smallerPlayerBtn.pack(side="top", pady=(150, 0))
+    smallerPlayerBtn.pack(side="top", pady=(170, 0))
     invincibility.pack(side="top", pady=(20, 0))
-    cheatsHomeBtn.pack(side="top", pady=(200, 0))
+    cheatsHomeBtn.pack(side="top", pady=(160, 0))
 
     # LEADERBOARD FRAME WIDGETS
     leaderboardLabel = Label(leaderboardFrame, width=30, height=4, bg="pink", text="LEADERBOARD", font=("Comic Sans MS", 20, "bold"), borderwidth=3, relief="solid")
@@ -265,7 +268,7 @@ def initialiseSettings():
     bossEnabled = False # Checks if the boss frame is active or not
     gameActive = False
     paused = False
-    pauseFrameActive = False
+    pauseFrameActive = False # Used by bossKey to check if the pause frame is showing
 
     # Get saved settings from settings.txt file
     controls = []
@@ -346,9 +349,13 @@ def updateKeybind(event):
         elif keybindNum == 2:
             leftBtn.configure(text="Left: " + tempText)
             window.bind(controls[keybindNum], leftDirection)
-        else:
+        elif keybindNum == 3:
             rightBtn.configure(text="Right: " + tempText)
             window.bind(controls[keybindNum], rightDirection)
+        else:
+            bossKeyBtn.configure(text="Boss Key: " + tempText)
+            window.bind(controls[keybindNum], bossKey)
+
 
 def cancelKeybindChange():
     '''Used if the user decides not to bind a key after clicking a button.'''
