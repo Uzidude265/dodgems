@@ -150,7 +150,7 @@ def initialiseMenu():
     # PAUSE FRAME WIDGETS
     pauseLabel = Label(pauseFrame, width=30, height=4, bg="pink", text="GAME PAUSED", font=("Comic Sans MS", 20, "bold"), borderwidth=3, relief="solid")
     pauseInfoLabel = Label(pauseFrame, width=30, height=6, bg="pink", text="Press Esc to unpause.\nExit to the home menu or\nsave your current game.", font=("Comic Sans MS", 18, "bold"), borderwidth=3, relief="solid")
-    saveBtn = Btn(pauseFrame, width=25, height=1, text="Save Game", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=None)
+    saveBtn = Btn(pauseFrame, width=25, height=1, text="Save Game", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=saveGame)
     pauseHomeBtn = Btn(pauseFrame, width=25, height=1, text="Home", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:swapFrames(0))
 
     # PAUSE FRAME PACKING
@@ -285,15 +285,6 @@ def initialiseSettings():
     bgColour = settings.readline().strip()
     settings.close()
 
-def saveSettings():
-    '''Save the current settings in a text file for next time.'''
-    global controls, bgColour
-    settings = open("settings.txt", "w")
-    for setting in controls:
-        settings.write(setting + "\n")
-    settings.write(bgColour)
-    settings.close()
-
 def changeBackground(bgCode):
     '''Changes the colour of the backgrounds according to user input'''
     # Get colour code from argument
@@ -330,6 +321,13 @@ def setKeybindChange(tempNum):
     keybindNum = tempNum
     keybindsSettingsBtn.configure(text="Cancel", command=cancelKeybindChange) # Change button to a cancel button
 
+def cancelKeybindChange():
+    '''Used if the user decides not to bind a key after clicking a button.'''
+    global triggeredKeybindChange, keybindsPromptLabel, keybindsSettingsBtn
+    triggeredKeybindChange = False #Reset variables
+    keybindsPromptLabel.configure(text="Click a keybind to change")
+    keybindsSettingsBtn.configure(text="Back to Settings", command=lambda:swapFrames(1)) # Change button back to normal
+
 def updateKeybind(event):
     '''Updates the keybind as long as they intended to, else adds the keypress to the cheat code buffer.'''
     global controls, triggeredKeybindChange, keybindsPromptLabel, keybindsSettingsBtn
@@ -361,14 +359,15 @@ def updateKeybind(event):
             bossKeyBtn.configure(text="Boss Key: " + tempText)
             window.bind(controls[keybindNum], bossKey)
 
-
-def cancelKeybindChange():
-    '''Used if the user decides not to bind a key after clicking a button.'''
-    global triggeredKeybindChange, keybindsPromptLabel, keybindsSettingsBtn
-    triggeredKeybindChange = False #Reset variables
-    keybindsPromptLabel.configure(text="Click a keybind to change")
-    keybindsSettingsBtn.configure(text="Back to Settings", command=lambda:swapFrames(1)) # Change button back to normal
-
+def saveSettings():
+    '''Save the current settings in a text file for next time.'''
+    global controls, bgColour
+    settings = open("settings.txt", "w")
+    for setting in controls:
+        settings.write(setting + "\n")
+    settings.write(bgColour)
+    settings.close()
+    
 #---------------------------------------------- LEADERBOARD FUNCTIONS -----------------------------------------------------------------------
 
 def createLeaderboard():
@@ -582,6 +581,7 @@ def gameLoop():
         score = int(score)
         finalScoreLabel.configure(text="You scored " + str(score) + " points!\n\nEnter your name to save your score\nor exit to the menu")
         gameCanvas.after_cancel(randomizeRepeatNum) # Stop after loop from randomizing abilities
+        gameCanvas.after_cancel(scoreRepeatNum)
         swapFrames(6)
 
 def pause(event):                                    
@@ -666,8 +666,13 @@ def deleteBalls():
     gameCanvas.itemconfigure(abilities[3], state="hidden")
     gameCanvas.coords(abilities[3], 0, 0, 0, 0) # Move scoreUp to top right to prevent overchecking collisions
     global balls, numBalls
-    numBalls -= 3
-    for ball in range(3):
+    if numBalls <= 2: # If there are less than 3 balls on the screen, get rid of them all
+        deleteNum = numBalls
+        numBalls -= numBalls
+    else: # Else delete 3 balls
+        deleteNum = 3
+        numBalls -= 3
+    for ball in range(deleteNum):
         tempBall = randint(0, len(balls)-1)
         tempXSpeed = xSpeed[tempBall]
         xSpeed.remove(tempXSpeed)
@@ -883,6 +888,11 @@ def deleteBallsCollision(pos):
     if pos[0] < pos2[2] and pos[2] > pos2[0] and pos[1] < pos2[3] and pos[3] > pos2[1] \
     or pos[0] > pos2[2] and pos[2] < pos2[0] and pos[1] > pos2[3] and pos[3] < pos2[1]:
         deleteBalls()
+
+#---------------------------------------------- SAVE CURRENT GAME --------------------------------------------------------
+
+def saveGame():
+    pass
 
 #---------------------------------------------- MAIN PROGRAM --------------------------------------------------------
 
