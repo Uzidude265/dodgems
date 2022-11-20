@@ -66,11 +66,11 @@ def initialiseMenu():
 
     # SETTINGS FRAME PACKING
     settingsLabel.pack(side="top", pady=(150, 0))
-    bgBtn.pack(side="top", pady=(130, 0))
+    bgBtn.pack(side="top", pady=(105, 0))
     keybindsBtn.pack(side="top", pady=(20, 0))
     defaultsBtn.pack(side="top", pady=(20, 0))
     cheatsBtn.pack(side="top", pady=(20, 0))
-    settingsHomeBtn.pack(side="top", pady=(170, 0))
+    settingsHomeBtn.pack(side="top", pady=(120, 0))
 
     # BACKGROUND COLOUR FRAME
     bgLabel = Label(bgFrame, width=30, height=4, bg="pink", text="CHANGE BACKGROUND COLOUR", font=("Comic Sans MS", 20, "bold"), borderwidth=3, relief="solid")
@@ -138,8 +138,8 @@ def initialiseMenu():
 
     # LEADERBOARD FRAME PACKING
     leaderboardLabel.pack(side="top", pady=(150, 0))
-    leaderboard.pack(side="top", pady=(50, 0))
-    leaderboardHomeBtn.pack(side="top", pady=(60, 0))
+    leaderboard.pack(side="top", pady=(45, 0))
+    leaderboardHomeBtn.pack(side="top", pady=(45, 0))
 
     # INFO FRAME WIDGETS
     infoLabel = Label(infoFrame, width=30, height=4, bg="pink", text="HOW TO PLAY", font=("Comic Sans MS", 20, "bold"), borderwidth=3, relief="solid")
@@ -691,9 +691,9 @@ def updateCoords(abilityNum):
     gameCanvas.itemconfigure(abilities[abilityNum], state="normal")
 
 def scoreUp():
-    '''Increases the score by 20 after the scoreUp power-up is collected.'''
+    '''Increases the score by 30 after the scoreUp power-up is collected.'''
     global score, abilities, scoreUpRepeatNum
-    score += 20
+    score += 30
     gameCanvas.itemconfigure(abilities[0], state="hidden")
     gameCanvas.coords(abilities[0], 0, 0, 0, 0) # Move scoreUp to top right to prevent overchecking collisions
     scoreUpRepeatNum = gameCanvas.after(4000, lambda:updateCoords(0))
@@ -835,15 +835,18 @@ def createBall():
     # If slow time ability is active, half speed values
     global slowed
     if slowed == True:
-        speedValues = [1, 5]
-        colourBounds = [4, 3, 2]
+        speedValues = [0, 5]
+        colourBounds = [3.75, 2.5, 1.25]
     else:
-        speedValues = [2, 10]
-        colourBounds = [8, 6, 4]
+        speedValues = [1, 10]
+        colourBounds = [7.5, 5, 2.5]
 
     # Generate speed values for ball
-    tempX = randint(speedValues[0], speedValues[1]) # Get random speed values for x and y
-    tempY = randint(speedValues[0], speedValues[1])
+    tempX = 0
+    tempY = 0
+    while tempX == 0 and tempY == 0: # Cannot have a ball standing still
+        tempX = randint(speedValues[0], speedValues[1]) # Get random speed values for x and y
+        tempY = randint(speedValues[0], speedValues[1])
     xSign = randint(0,1) # Determine direction (positive or negative speed)
     ySign = randint(0,1)
     if xSign == 0:
