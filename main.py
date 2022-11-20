@@ -58,6 +58,7 @@ def initialiseMenu():
     settingsLabel = Label(settingsFrame, width=30, height=4, bg="pink", text="SETTINGS", font=("Comic Sans MS", 20, "bold"), borderwidth=3, relief="solid")
     bgBtn = Btn(settingsFrame, width=25, height=1, text="Change Background Colour", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:swapFrames(2))
     keybindsBtn = Btn(settingsFrame, width=25, height=1, text="Change Keybinds", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:swapFrames(3))
+    defaultsBtn = Btn(settingsFrame, width=25, height=1, text="Reset to Default Settings", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=defaultSettings)
     cheatsBtn = Btn(settingsFrame, width=25, height=1, text="Cheats", bg="red", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=None)
     settingsHomeBtn = Btn(settingsFrame, width=25, height=1, text="Home", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:swapFrames(0))
 
@@ -65,6 +66,7 @@ def initialiseMenu():
     settingsLabel.pack(side="top", pady=(150, 0))
     bgBtn.pack(side="top", pady=(130, 0))
     keybindsBtn.pack(side="top", pady=(20, 0))
+    defaultsBtn.pack(side="top", pady=(20, 0))
     cheatsBtn.pack(side="top", pady=(20, 0))
     settingsHomeBtn.pack(side="top", pady=(170, 0))
 
@@ -242,6 +244,7 @@ def bossKey(event):
             bossFrame.pack(fill="both", expand=True)
             gameCanvas.after_cancel(randomizeRepeatNum) # Stop after loop from randomizing abilities
             gameCanvas.after_cancel(scoreRepeatNum)
+            gameCanvas.after_cancel(timeRepeatNum)
     elif pauseFrameActive == True: # Else if the pause frame is showing, replace with boss frame
         if bossEnabled == True:
             bossEnabled = False
@@ -358,6 +361,20 @@ def updateKeybind(event):
         else:
             bossKeyBtn.configure(text="Boss Key: " + tempText)
             window.bind(controls[keybindNum], bossKey)
+
+def defaultSettings():
+    global bgColour, controls
+    bgColour = "#cbf7e6"
+    for control in controls:
+        window.unbind(control)
+    controls = ["<Up>", "<Down>", "<Left>", "<Right>", "<Control_L>"]
+    initialiseKeybinds()
+    upBtn.configure(text="Up: Up")
+    downBtn.configure(text="Down: Down")
+    leftBtn.configure(text="Left: Left")
+    rightBtn.configure(text="Right: Right")
+    bossKeyBtn.configure(text="Boss Key: Control_L")
+    changeBackground(bgColour)
 
 def saveSettings():
     '''Save the current settings in a text file for next time.'''
@@ -499,8 +516,9 @@ def initialiseGame():
     gameCanvas.pack(fill="both", expand=True)
 
     # Create all of the variables needed
-    global time, score, numBalls, balls, xSpeed, ySpeed, playerDirectionX, playerDirectionY, gameActive, paused, abilities, slowed, invincible, player, scoreText, invincibilityText, invincibilityTextRectangle, invincibilityTextCount, slowText, slowTextCount, slowTextRectangle, countdownText, pausedBackground, pausedText, bossImage
+    global time, displayTime, score, numBalls, balls, xSpeed, ySpeed, playerDirectionX, playerDirectionY, gameActive, paused, abilities, slowed, invincible, player, scoreText, invincibilityText, invincibilityTextRectangle, invincibilityTextCount, slowText, slowTextCount, slowTextRectangle, timeText, timeTextCount, countdownText, pausedBackground, pausedText, bossImage
     time = 0
+    displayTime = 0
     score = 0
     numBalls = 0
     balls = [] # Stores all the balls created
@@ -533,6 +551,11 @@ def initialiseGame():
     slowTextRectangle = gameCanvas.create_rectangle(bbox[0]-25, bbox[1], bbox[2]+25, bbox[3], outline="black", width=2)
     slowTextCount = 0
     gameCanvas.lower(slowTextRectangle, slowText) # Puts the rectangle behind the text
+    timeText = gameCanvas.create_text(1500, 30, text="Time: 0", font=("Comic Sans MS", 20, "bold"))
+    bbox = gameCanvas.bbox(timeText)
+    timeTextRectangle = gameCanvas.create_rectangle(bbox[0]-25, bbox[1], bbox[2]+25, bbox[3], outline="black", width=2)
+    timeTextCount = 0
+    gameCanvas.lower(timeTextRectangle, timeText) # Puts the rectangle behind the text
     countdownText = gameCanvas.create_text(960, 540, text="3", font=("Comic Sans MS", 75, "bold"))
     pausedBackground = gameCanvas.create_rectangle(850, 480, 100, 600, fill="pink", outline="black", state="hidden")
     pausedText = gameCanvas.create_text(960, 540, text="PAUSED\nPress Esc to resume.", font=("Comic Sans MS", 75, "bold"), state="hidden")
@@ -557,23 +580,29 @@ def countdown():
 def gameLoop():
     '''The main game loop that repeats until the game ends, then switches to the game over screen.'''
     # Keep looping until player is hit
-    global gameActive, time, score, paused, randomizeRepeatNum, scoreRepeatNum
+    global gameActive, time, score, paused, randomizeRepeatNum, scoreRepeatNum, timeRepeatNum
     countdown() # Start countdown
     randomizeRepeatNum = gameCanvas.after(12000, randomizeAbility) # Start the wait to spawn an ability
     scoreRepeatNum = gameCanvas.after(4000, lambda:updateCoords(0))
+    timeRepeatNum = gameCanvas.after(1000, timer)
     gameActive = True
     while gameActive and not paused:
         gameCanvas.move(player, playerDirectionX, playerDirectionY)
         moveBalls()
         checkPlayerCollision()
         sleep(0.005)
-        time += 0.005
+        #time += 0.005
         score += 0.03
         displayScore = int(score)
-        gameCanvas.itemconfigure(scoreText, text="Score: " + str(displayScore))
-        if time > 2:
-            createBall()
+        if time % 5 == 4:
+            print("hello")
             time = 0
+            createBall()
+        gameCanvas.itemconfigure(scoreText, text="Score: " + str(displayScore))
+        gameCanvas.itemconfigure(timeText, text="Time: " + str(displayTime))
+        #if time > 1.75:
+        #    createBall()
+        #    time = 0
         window.update()
 
     # Go to game over screen once game is finished only if loop wasn't finished by pause
@@ -582,7 +611,16 @@ def gameLoop():
         finalScoreLabel.configure(text="You scored " + str(score) + " points!\n\nEnter your name to save your score\nor exit to the menu")
         gameCanvas.after_cancel(randomizeRepeatNum) # Stop after loop from randomizing abilities
         gameCanvas.after_cancel(scoreRepeatNum)
+        gameCanvas.after_cancel(timeRepeatNum)
         swapFrames(6)
+
+def timer():
+    '''Adds one second to the universal timer'''
+    global time, displayTime, timeRepeatNum
+    print(time)
+    time += 1
+    displayTime += 1
+    timeRepeatNum = gameCanvas.after(1000, timer)
 
 def pause(event):                                    
     '''Pause or unpause the game, and display the paused frame.'''
@@ -601,6 +639,7 @@ def pause(event):
             pauseFrame.pack(fill="both", expand=True)
             gameCanvas.after_cancel(randomizeRepeatNum) # Stop after loop from randomizing abilities
             gameCanvas.after_cancel(scoreRepeatNum)
+            gameCanvas.after_cancel(timeRepeatNum)
 
 #---------------------------------------------- POWER UP FUNCTIONS -----------------------------------------------------------------------
 
