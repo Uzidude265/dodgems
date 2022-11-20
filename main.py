@@ -1,3 +1,6 @@
+# OBJECTIVES:
+# 1. SAVE FUNCTION
+
 # SCREEN RESOLUTION: 1920x1080
 from tkinter import Tk, Frame, Button as Btn, Label, PhotoImage as Image, Canvas, Checkbutton as CheckBtn, ttk, Entry
 from time import sleep
@@ -187,7 +190,7 @@ def swapFrames(frameNum):
         pauseFrame.pack_forget()
         homeFrame.pack(fill="both", expand=True)
         nameInput.delete(0, "end") # Disable entry box after going back home
-        nameInput.configure(state="disabled") 
+        nameInput.configure(state="disabled")
     elif frameNum == 1: # Swap to the settings frame
         homeFrame.pack_forget()
         bgFrame.pack_forget()
@@ -217,7 +220,7 @@ def swapFrames(frameNum):
 
 def bossKey(event):
     '''Activates whenever the boss key is pressed and displays an unsuspecting image.'''
-    global gameActive, bossEnabled, paused, pauseFrameActive
+    global gameActive, bossEnabled, paused, pauseFrameActive, randomizeRepeatNum, scoreRepeatNum
     if gameActive == False: # If at menu, place boss frame on top
         if bossEnabled == True:
             bossEnabled = False
@@ -237,6 +240,8 @@ def bossKey(event):
             paused = True
             gameCanvas.pack_forget()
             bossFrame.pack(fill="both", expand=True)
+            gameCanvas.after_cancel(randomizeRepeatNum) # Stop after loop from randomizing abilities
+            gameCanvas.after_cancel(scoreRepeatNum)
     elif pauseFrameActive == True: # Else if the pause frame is showing, replace with boss frame
         if bossEnabled == True:
             bossEnabled = False
@@ -365,8 +370,6 @@ def cancelKeybindChange():
     keybindsSettingsBtn.configure(text="Back to Settings", command=lambda:swapFrames(1)) # Change button back to normal
 
 #---------------------------------------------- LEADERBOARD FUNCTIONS -----------------------------------------------------------------------
-
-#                                 ADD ABILITY TO ADD NAME AND SCORE FROM GAME OVER MENU
 
 def createLeaderboard():
     '''Creates and formats the leaderboard with headings.'''
@@ -497,7 +500,7 @@ def initialiseGame():
     gameCanvas.pack(fill="both", expand=True)
 
     # Create all of the variables needed
-    global time, score, numBalls, balls, xSpeed, ySpeed, playerDirectionX, playerDirectionY, gameActive, paused, abilities, player, scoreText, countdownText, pausedBackground, pausedText, bossImage
+    global time, score, numBalls, balls, xSpeed, ySpeed, playerDirectionX, playerDirectionY, gameActive, paused, abilities, slowed, invincible, player, scoreText, invincibilityText, invincibilityTextRectangle, invincibilityTextCount, slowText, slowTextCount, slowTextRectangle, countdownText, pausedBackground, pausedText, bossImage
     time = 0
     score = 0
     numBalls = 0
@@ -506,13 +509,31 @@ def initialiseGame():
     ySpeed = []
     playerDirectionX = 7
     playerDirectionY = 0
-    abilities = [False, False, False, False] # Stores current state of abilities
+    abilities = []
+    abilities.append(gameCanvas.create_rectangle(0, 0, 0, 0, fill="lime", outline="black", width=2, state="hidden")) # scoreUp ability
+    abilities.append(gameCanvas.create_rectangle(0, 0, 0, 0, fill="white", outline="black", width=2, state="hidden")) # invincibility ability
+    abilities.append(gameCanvas.create_rectangle(0, 0, 0, 0, fill="orange", outline="black", width=2, state="hidden")) # slow time ability
+    abilities.append(gameCanvas.create_rectangle(0, 0, 0, 0, fill="cyan", outline="black", width=2, state="hidden")) # delete balls ability
+    slowed = False
+    invincible = False
     if cheats[0] == True: # If smaller player cheat is enabled, make smaller player
         xy = (950, 530, 970, 550)
     else:
-        xy = (930, 510, 990, 570)
-    player = gameCanvas.create_rectangle(xy, fill="light blue", outline="black")
+        xy = (935, 515, 985, 565)
+    player = gameCanvas.create_rectangle(xy, fill="light blue", outline="black", width=2)
     scoreText = gameCanvas.create_text(1800, 30, text="Score: " + str(score), font=("Comic Sans MS", 20, "bold"))
+    bbox = gameCanvas.bbox(scoreText)
+    scoreTextRectangle = gameCanvas.create_rectangle(bbox[0]-25, bbox[1], bbox[2]+25, bbox[3], outline="black", width=2)
+    invincibilityText = gameCanvas.create_text(140, 30, text="Invincibility: 0", font=("Comic Sans MS", 20, "bold"))
+    bbox = gameCanvas.bbox(invincibilityText)
+    invincibilityTextRectangle = gameCanvas.create_rectangle(bbox[0]-25, bbox[1], bbox[2]+25, bbox[3], outline="black", width=2)
+    invincibilityTextCount = 0
+    gameCanvas.lower(invincibilityTextRectangle, invincibilityText) # Puts the rectangle behind the text
+    slowText = gameCanvas.create_text(400, 30, text="Slow Time: 0", font=("Comic Sans MS", 20, "bold"))
+    bbox = gameCanvas.bbox(slowText)
+    slowTextRectangle = gameCanvas.create_rectangle(bbox[0]-25, bbox[1], bbox[2]+25, bbox[3], outline="black", width=2)
+    slowTextCount = 0
+    gameCanvas.lower(slowTextRectangle, slowText) # Puts the rectangle behind the text
     countdownText = gameCanvas.create_text(960, 540, text="3", font=("Comic Sans MS", 75, "bold"))
     pausedBackground = gameCanvas.create_rectangle(850, 480, 100, 600, fill="pink", outline="black", state="hidden")
     pausedText = gameCanvas.create_text(960, 540, text="PAUSED\nPress Esc to resume.", font=("Comic Sans MS", 75, "bold"), state="hidden")
@@ -537,8 +558,10 @@ def countdown():
 def gameLoop():
     '''The main game loop that repeats until the game ends, then switches to the game over screen.'''
     # Keep looping until player is hit
-    global gameActive, time, score, paused
+    global gameActive, time, score, paused, randomizeRepeatNum, scoreRepeatNum
     countdown() # Start countdown
+    randomizeRepeatNum = gameCanvas.after(12000, randomizeAbility) # Start the wait to spawn an ability
+    scoreRepeatNum = gameCanvas.after(4000, lambda:updateCoords(0))
     gameActive = True
     while gameActive and not paused:
         gameCanvas.move(player, playerDirectionX, playerDirectionY)
@@ -549,7 +572,7 @@ def gameLoop():
         score += 0.03
         displayScore = int(score)
         gameCanvas.itemconfigure(scoreText, text="Score: " + str(displayScore))
-        if time > 1:
+        if time > 1.5:
             createBall()
             time = 0
         window.update()
@@ -558,11 +581,12 @@ def gameLoop():
     if paused == False:
         score = int(score)
         finalScoreLabel.configure(text="You scored " + str(score) + " points!\n\nEnter your name to save your score\nor exit to the menu")
+        gameCanvas.after_cancel(randomizeRepeatNum) # Stop after loop from randomizing abilities
         swapFrames(6)
 
 def pause(event):                                    
     '''Pause or unpause the game, and display the paused frame.'''
-    global paused, pauseFrameActive, gameActive
+    global paused, pauseFrameActive, gameActive, randomizeRepeatNum, scoreRepeatNum
     if gameActive == True: # Only change paused state if playing game
         if paused:
             paused = False
@@ -575,24 +599,111 @@ def pause(event):
             pauseFrameActive = True
             gameCanvas.pack_forget() # Hide game and show pause frame
             pauseFrame.pack(fill="both", expand=True)
+            gameCanvas.after_cancel(randomizeRepeatNum) # Stop after loop from randomizing abilities
+            gameCanvas.after_cancel(scoreRepeatNum)
 
 #---------------------------------------------- POWER UP FUNCTIONS -----------------------------------------------------------------------
 
-# HALF SPEED VALUES AND DOUBLE AFTERWARDS
-def slowTime():
-    pass
+def randomizeAbility():
+    '''Chooses a random ability to put on the screen, or update its position if still on the screen.'''
+    global randomizeRepeatNum
+    abilityNum = randint(1,3)
+    updateCoords(abilityNum)
+    randomizeRepeatNum = gameCanvas.after(12000, randomizeAbility)
 
-# INCREASE SCORE AFTER COLLECTING POWER UP
+def updateCoords(abilityNum):
+    '''Updates the coordinates of a given ability.'''
+    global abilities
+    xPos = randint(50,1870)
+    yPos = randint(50,1030)
+    gameCanvas.coords(abilities[abilityNum], xPos, yPos, xPos+15, yPos+15)
+    gameCanvas.itemconfigure(abilities[abilityNum], state="normal")
+
 def increaseScore():
-    pass
+    '''Increases the score by 20 after the scoreUp power-up is collected.'''
+    global score, abilities, scoreRepeatNum
+    score += 20
+    gameCanvas.itemconfigure(abilities[0], state="hidden")
+    gameCanvas.coords(abilities[0], 0, 0, 0, 0) # Move scoreUp to top right to prevent overchecking collisions
+    scoreRepeatNum = gameCanvas.after(4000, lambda:updateCoords(0))
 
-# DISABLE COLLISION DETECTION
-def invincible():
-    pass
+def invincibility():
+    '''Gain invincibility from balls after collecting the invinsible ability.'''
+    global invincible
+    gameCanvas.itemconfigure(abilities[1], state="hidden")
+    gameCanvas.coords(abilities[1], 0, 0, 0, 0) # Move scoreUp to top right to prevent overchecking collisions
+    invincible = True
+    gameCanvas.itemconfigure(player, fill="#a1fc03")
+    updateInvincibilityText()
+    gameCanvas.after(5000, disableInvincibility)
 
-# GET RID OF 3 BALLS
-def deleteAbility():
-    pass
+def disableInvincibility():
+    '''Disabled invincibility after 5 seconds.'''
+    global invincible
+    invincible = False
+    gameCanvas.itemconfigure(player, fill="light blue")
+
+def slowTime():
+    '''Slows the balls by half after collecting the slow time ability.'''
+    global xSpeed, ySpeed, slowed
+    slowed = True
+    gameCanvas.itemconfigure(abilities[2], state="hidden")
+    gameCanvas.coords(abilities[2], 0, 0, 0, 0) # Move scoreUp to top right to prevent overchecking collisions
+    xSpeed = [speed/2 for speed in xSpeed]
+    ySpeed = [speed/2 for speed in ySpeed]
+    updateSlowText()
+    gameCanvas.after(5000, unslowTime)
+
+def unslowTime():
+    '''Resets all ball speeds by doubling the speed value.'''
+    global xSpeed, ySpeed, slowed
+    slowed = False
+    xSpeed = [speed*2 for speed in xSpeed]
+    ySpeed = [speed*2 for speed in ySpeed]
+
+def deleteBalls():
+    '''Deletes 3 balls randomly after collecting the delete balls ability.'''
+    gameCanvas.itemconfigure(abilities[3], state="hidden")
+    gameCanvas.coords(abilities[3], 0, 0, 0, 0) # Move scoreUp to top right to prevent overchecking collisions
+    global balls, numBalls
+    numBalls -= 3
+    for ball in range(3):
+        tempBall = randint(0, len(balls)-1)
+        tempXSpeed = xSpeed[tempBall]
+        xSpeed.remove(tempXSpeed)
+        tempYSpeed = ySpeed[tempBall]
+        ySpeed.remove(tempYSpeed)
+        tempBall = balls[tempBall]
+        balls.remove(tempBall)
+        gameCanvas.delete(tempBall)
+
+def updateInvincibilityText():
+    global invincibilityTextCount
+    if invincibilityTextCount == 0:
+        invincibilityTextCount = 5
+    else:
+        invincibilityTextCount -= 1
+    gameCanvas.itemconfigure(invincibilityText, text="Invincibility: " + str(invincibilityTextCount))
+    if invincibilityTextCount == 2 or invincibilityTextCount == 1: # Show visible red warning for ability ending soon
+        gameCanvas.itemconfigure(invincibilityTextRectangle, fill="red")
+    if invincibilityTextCount != 0:
+        gameCanvas.after(1000, updateInvincibilityText)
+    else:
+        gameCanvas.itemconfigure(invincibilityTextRectangle, fill="")
+
+def updateSlowText():
+    global slowTextCount
+    if slowTextCount == 0:
+        slowTextCount = 5
+    else:
+        slowTextCount -= 1
+    gameCanvas.itemconfigure(slowText, text="Slow Time: " + str(slowTextCount))
+    if slowTextCount == 2 or slowTextCount == 1: # Show visible red warning for ability ending soon
+        gameCanvas.itemconfigure(slowTextRectangle, fill="red")
+    if slowTextCount != 0:
+        gameCanvas.after(1000, updateSlowText)
+    else:
+        gameCanvas.itemconfigure(slowTextRectangle, fill="")
 
 #---------------------------------------------- BALL FUNCTIONS -----------------------------------------------------------------------
 
@@ -615,11 +726,20 @@ def createBall():
 
     # Create ball
     xy = (xPos, yPos, xPos+20, yPos+20)
-    balls.append(gameCanvas.create_oval(xy, fill="#ff0000"))
+    balls.append(gameCanvas.create_oval(xy, fill="#ff0000", width=2))
+
+    # If slow time ability is active, half speed values
+    global slowed
+    if slowed == True:
+        speedValues = [1, 5]
+        colourBounds = [4, 3, 2]
+    else:
+        speedValues = [2, 10]
+        colourBounds = [8, 6, 4]
 
     # Generate speed values for ball
-    tempX = randint(2,10) # Get random speed values for x and y
-    tempY = randint(2,10)
+    tempX = randint(speedValues[0], speedValues[1]) # Get random speed values for x and y
+    tempY = randint(speedValues[0], speedValues[1])
     xSign = randint(0,1) # Determine direction (positive or negative speed)
     ySign = randint(0,1)
     if xSign == 0:
@@ -632,11 +752,11 @@ def createBall():
     # Determine colour of ball based on speed (Black < Blue < Purple < Red)
     averageSpeed = (abs(tempX) + abs(tempY))/2
     global numBalls
-    if averageSpeed >= 8:
+    if averageSpeed >= colourBounds[0]:
         gameCanvas.itemconfigure(balls[numBalls], fill="#ff0000", outline="black")
-    elif averageSpeed >= 7:
+    elif averageSpeed >= colourBounds[1]:
         gameCanvas.itemconfigure(balls[numBalls], fill="#d303fc", outline="black")
-    elif averageSpeed >= 5:
+    elif averageSpeed >= colourBounds[2]:
         gameCanvas.itemconfigure(balls[numBalls], fill="blue", outline="black")
     else:
         gameCanvas.itemconfigure(balls[numBalls], fill="black", outline="black")
@@ -672,7 +792,7 @@ def moveBalls():
         # Move ball using its speed values
         gameCanvas.move(balls[i], xSpeed[i], ySpeed[i])
 
-#---------------------------------------------- PLAYER DIRECTION FUNCTIONS ----------------------------------------------------
+#---------------------------------------------- PLAYER FUNCTIONS ----------------------------------------------------
 
 def upDirection(event):
     '''Change the player's direction to up.'''
@@ -698,23 +818,55 @@ def rightDirection(event):
     playerDirectionX = 7
     playerDirectionY = 0
 
-#---------------------------------------------- END GAME FUNCTIONS --------------------------------------------------------
-
 def checkPlayerCollision():
-    '''Checks if the player is touching a ball or has collided with the wall, if so it ends the game.'''
+    '''Checks if the player is touching a ball, the wall or any abilities.'''
     # Check if player has collided with wall, even with invincibility cheat on
-    global gameActive, cheats
+    global gameActive, cheats, abilities
     pos = gameCanvas.coords(player)
     if pos[3] > 1080 or pos[1] < 0 or pos[2] > 1920 or pos[0] < 0:
         gameActive = False
 
+    # Check collision with all abilities
+    scoreUpCollision(pos)
+    invincibleCollision(pos)
+    slowTimeCollision(pos)
+    deleteBallsCollision(pos)
+
     # Only check if player has collided with any ball if invincibility is disabled
-    if cheats[1] == False:
+    if cheats[1] != True and invincible != True:
         for i in range(len(balls)):
             pos2 = gameCanvas.coords(balls[i])
             if pos[0] < pos2[2] and pos[2] > pos2[0] and pos[1] < pos2[3] and pos[3] > pos2[1] \
             or pos[0] > pos2[2] and pos[2] < pos2[0] and pos[1] > pos2[3] and pos[3] < pos2[1]: # Need to check if either side of player has collided
                 gameActive = False
+
+def scoreUpCollision(pos):
+    '''Takes the players position as argument and checks if they collided with the scoreUp ability'''
+    pos2 = gameCanvas.coords(abilities[0])
+    if pos[0] < pos2[2] and pos[2] > pos2[0] and pos[1] < pos2[3] and pos[3] > pos2[1] \
+    or pos[0] > pos2[2] and pos[2] < pos2[0] and pos[1] > pos2[3] and pos[3] < pos2[1]:
+        increaseScore()
+
+def invincibleCollision(pos):
+    '''Takes the players position as argument and checks if they collided with the invincible ability'''
+    pos2 = gameCanvas.coords(abilities[1])
+    if pos[0] < pos2[2] and pos[2] > pos2[0] and pos[1] < pos2[3] and pos[3] > pos2[1] \
+    or pos[0] > pos2[2] and pos[2] < pos2[0] and pos[1] > pos2[3] and pos[3] < pos2[1]:
+        invincibility()
+
+def slowTimeCollision(pos):
+    '''Takes the players position as argument and checks if they collided with the slow time ability'''
+    pos2 = gameCanvas.coords(abilities[2])
+    if pos[0] < pos2[2] and pos[2] > pos2[0] and pos[1] < pos2[3] and pos[3] > pos2[1] \
+    or pos[0] > pos2[2] and pos[2] < pos2[0] and pos[1] > pos2[3] and pos[3] < pos2[1]:
+        slowTime()
+
+def deleteBallsCollision(pos):
+    '''Takes the players position as argument and checks if they collided with the delete balls ability'''
+    pos2 = gameCanvas.coords(abilities[3])
+    if pos[0] < pos2[2] and pos[2] > pos2[0] and pos[1] < pos2[3] and pos[3] > pos2[1] \
+    or pos[0] > pos2[2] and pos[2] < pos2[0] and pos[1] > pos2[3] and pos[3] < pos2[1]:
+        deleteBalls()
 
 #---------------------------------------------- MAIN PROGRAM --------------------------------------------------------
 
