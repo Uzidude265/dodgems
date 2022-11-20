@@ -572,7 +572,7 @@ def gameLoop():
         score += 0.03
         displayScore = int(score)
         gameCanvas.itemconfigure(scoreText, text="Score: " + str(displayScore))
-        if time > 1.5:
+        if time > 2:
             createBall()
             time = 0
         window.update()
@@ -678,28 +678,44 @@ def deleteBalls():
         gameCanvas.delete(tempBall)
 
 def updateInvincibilityText():
+    '''Updates the invincibility text with the amount of time left.'''
     global invincibilityTextCount
+    # Update count accordingly
     if invincibilityTextCount == 0:
         invincibilityTextCount = 5
     else:
         invincibilityTextCount -= 1
     gameCanvas.itemconfigure(invincibilityText, text="Invincibility: " + str(invincibilityTextCount))
-    if invincibilityTextCount == 2 or invincibilityTextCount == 1: # Show visible red warning for ability ending soon
+
+    # Configure colour of rectangle according to time left
+    if invincibilityTextCount >= 3:
+        gameCanvas.itemconfigure(invincibilityTextRectangle, fill="lime")
+    elif invincibilityTextCount == 2 or invincibilityTextCount == 1: # Show visible red warning for ability ending soon
         gameCanvas.itemconfigure(invincibilityTextRectangle, fill="red")
+
+    # Call function again if timer isn't over
     if invincibilityTextCount != 0:
         gameCanvas.after(1000, updateInvincibilityText)
     else:
         gameCanvas.itemconfigure(invincibilityTextRectangle, fill="")
 
 def updateSlowText():
+    '''Updates the slow text with the amount of time left.'''
     global slowTextCount
+    # Update count accordingly
     if slowTextCount == 0:
         slowTextCount = 5
     else:
         slowTextCount -= 1
     gameCanvas.itemconfigure(slowText, text="Slow Time: " + str(slowTextCount))
-    if slowTextCount == 2 or slowTextCount == 1: # Show visible red warning for ability ending soon
+
+    # Configure colour of rectangle according to time left
+    if slowTextCount >= 3:
+        gameCanvas.itemconfigure(slowTextRectangle, fill="lime")
+    elif slowTextCount == 2 or slowTextCount == 1: # Show visible red warning for ability ending soon
         gameCanvas.itemconfigure(slowTextRectangle, fill="red")
+
+    # Call function again if timer isn't over
     if slowTextCount != 0:
         gameCanvas.after(1000, updateSlowText)
     else:
