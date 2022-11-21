@@ -201,6 +201,12 @@ def swapFrames(frameNum):
         nameInput.configure(state="disabled")
         paused = False
         gameActive = False
+        if slowed:
+            gameCanvas.after_cancel(slowTextRepeatNum)
+            gameCanvas.after_cancel(unslowRepeatNum)
+        if invincible:
+            gameCanvas.after_cancel(invincibilityTextRepeatNum)
+            gameCanvas.after_cancel(disableInvincibilityRepeatNum)
     elif frameNum == 1: # Swap to the settings frame
         homeFrame.pack_forget()
         bgFrame.pack_forget()
