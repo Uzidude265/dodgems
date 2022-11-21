@@ -627,6 +627,7 @@ def gameLoop():
 
     gameActive = True
     while gameActive and not paused:
+        print()
         gameCanvas.move(player, playerDirectionX, playerDirectionY)
         moveBalls()
         checkPlayerCollision()
@@ -761,7 +762,7 @@ def deleteBalls():
     '''Deletes 3 balls randomly after collecting the delete balls ability.'''
     gameCanvas.itemconfigure(abilities[3], state="hidden")
     gameCanvas.coords(abilities[3], 0, 0, 0, 0) # Move scoreUp to top right to prevent overchecking collisions
-    global balls, numBalls
+    global balls, numBalls, xSpeed, ySpeed
     if numBalls <= 2: # If there are less than 3 balls on the screen, get rid of them all
         deleteNum = numBalls
         numBalls -= numBalls
@@ -770,10 +771,8 @@ def deleteBalls():
         numBalls -= 3
     for ball in range(deleteNum):
         tempBall = randint(0, len(balls)-1)
-        tempXSpeed = xSpeed[tempBall]
-        xSpeed.remove(tempXSpeed)
-        tempYSpeed = ySpeed[tempBall]
-        ySpeed.remove(tempYSpeed)
+        xSpeed.pop(tempBall)
+        ySpeed.pop(tempBall)
         tempBall = balls[tempBall]
         balls.remove(tempBall)
         gameCanvas.delete(tempBall)
@@ -849,10 +848,10 @@ def createBall():
     global slowed
     if slowed == True:
         speedValues = [1, 5]
-        colourBounds = [4, 3, 1.5]
+        colourBounds = [4, 3, 2]
     else:
         speedValues = [2, 10]
-        colourBounds = [8, 6, 3]
+        colourBounds = [8, 6, 4]
 
     # Generate speed values for ball
     tempX = 0
