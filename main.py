@@ -652,6 +652,12 @@ def gameLoop():
         gameCanvas.after_cancel(scoreUpRepeatNum)
         gameCanvas.after_cancel(timeRepeatNum)
         gameCanvas.after_cancel(scoreTimeRepeatNum)
+        if slowed:
+            gameCanvas.after_cancel(slowTextRepeatNum)
+            gameCanvas.after_cancel(unslowRepeatNum)
+        if invincible:
+            gameCanvas.after_cancel(invincibilityTextRepeatNum)
+            gameCanvas.after_cancel(disableInvincibilityRepeatNum)
         swapFrames(6)
 
 def timer():
@@ -714,12 +720,12 @@ def scoreUp():
 
 def invincibility(invincibleFromMain):
     '''Gain invincibility from balls after collecting the invinsible ability.'''
-    global invincible, invincibleCount
+    global invincible, invincibleCount, disableInvincibilityRepeatNum
     if invincibleFromMain == True: # If this function was triggered by collecting an ability, increase the count
         invincibleCount += 1
     if not invincible and invincibleCount != 0:
         invincible = True
-        gameCanvas.after(5000, disableInvincibility)
+        disableInvincibilityRepeatNum = gameCanvas.after(5000, disableInvincibility)
         updateInvincibilityText()
     gameCanvas.coords(abilities[1], 0, 0, 0, 0) # Move scoreUp to top right to prevent overchecking collisions
     gameCanvas.itemconfigure(abilities[1], state="hidden")
@@ -736,14 +742,14 @@ def disableInvincibility():
 
 def slowTime(slowFromMain):
     '''Slows the balls by half after collecting the slow time ability.'''
-    global xSpeed, ySpeed, slowed, slowCount
+    global xSpeed, ySpeed, slowed, slowCount, unslowRepeatNum
     if slowFromMain == True:
         slowCount += 1
     if not slowed and slowCount != 0:
         slowed = True
         xSpeed = [speed/2 for speed in xSpeed]
         ySpeed = [speed/2 for speed in ySpeed]
-        gameCanvas.after(5000, unslowTime)
+        unslowRepeatNum = gameCanvas.after(5000, unslowTime)
         updateSlowText()
     gameCanvas.coords(abilities[2], 0, 0, 0, 0) # Move scoreUp to top right to prevent overchecking collisions
     gameCanvas.itemconfigure(abilities[2], state="hidden")
@@ -779,7 +785,7 @@ def deleteBalls():
 
 def updateInvincibilityText():
     '''Updates the invincibility text with the amount of time left.'''
-    global invincibilityTextCount
+    global invincibilityTextCount, invincibilityTextRepeatNum
     # Update count accordingly
     if invincibilityTextCount == 0:
         invincibilityTextCount = 5
@@ -795,13 +801,13 @@ def updateInvincibilityText():
 
     # Call function again if timer isn't over
     if invincibilityTextCount != 0:
-        gameCanvas.after(1000, updateInvincibilityText)
+        invincibilityTextRepeatNum = gameCanvas.after(1000, updateInvincibilityText)
     else:
         gameCanvas.itemconfigure(invincibilityTextRectangle, fill="")
 
 def updateSlowText():
     '''Updates the slow text with the amount of time left.'''
-    global slowTextCount
+    global slowTextCount, slowTextRepeatNum
     # Update count accordingly
     if slowTextCount == 0:
         slowTextCount = 5
@@ -817,7 +823,7 @@ def updateSlowText():
 
     # Call function again if timer isn't over
     if slowTextCount != 0:
-        gameCanvas.after(1000, updateSlowText)
+        slowTextRepeatNum = gameCanvas.after(1000, updateSlowText)
     else:
         gameCanvas.itemconfigure(slowTextRectangle, fill="")
 
