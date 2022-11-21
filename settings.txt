@@ -3,4 +3,4 @@
 <Left>
 <Right>
 <Control_L>
-#8ec8fa
+#cbf7e6
