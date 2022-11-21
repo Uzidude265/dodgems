@@ -561,7 +561,7 @@ def initialiseGame(loaded):
     saved = False
 
     # Create all abilities
-    global abilities, slowed, slowCount, invincible, invincibleCount
+    global abilities, slowed, slowCount, invincible, invincibleCount, abilityNum, previousAbility
     abilities = []
     abilities.append(gameCanvas.create_rectangle(0, 0, 0, 0, fill="lime", outline="black", width=2, state="hidden")) # scoreUp ability
     abilities.append(gameCanvas.create_rectangle(0, 0, 0, 0, fill="white", outline="black", width=2, state="hidden")) # invincibility ability
@@ -571,6 +571,8 @@ def initialiseGame(loaded):
     slowCount = 0 # Stores how many slow time power ups they have collected
     invincible = False
     invincibleCount = 0 # Stores how many invincible power ups they have collected
+    abilityNum = 0
+    previousAbility = 0
 
     # Create player
     global player
@@ -703,8 +705,10 @@ def pause(event):
 
 def randomizeAbility():
     '''Chooses a random ability to put on the screen, or update its position if still on the screen.'''
-    global randomizeRepeatNum
-    abilityNum = randint(1,3)
+    global randomizeRepeatNum, previousAbility, abilityNum
+    while abilityNum == previousAbility: # New ability cannot be the same as the last one
+        abilityNum = randint(1,3)
+    previousAbility = abilityNum
     updateCoords(abilityNum)
     randomizeRepeatNum = gameCanvas.after(12000, randomizeAbility)
 
