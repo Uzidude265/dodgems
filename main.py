@@ -38,10 +38,11 @@ def initialiseMenu():
     pauseFrame = Frame(window)
 
     # HOME FRAME WIDGETS
-    global logo
+    global logo, loadBtn
     logo = Image(file="Dodgems.png")
     homeLabel = Label(homeFrame, image=logo, highlightthickness=10)
-    playBtn = Btn(homeFrame, width=25, height=1, text="Play", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=initialiseGame)
+    playBtn = Btn(homeFrame, width=25, height=1, text="Play", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:initialiseGame(False))
+    loadBtn = Btn(homeFrame, width=25, height=1, text="Load Game", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=loadGame)
     settingsBtn = Btn(homeFrame, width=25, height=1, text="Settings", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:swapFrames(1))
     leaderboardBtn = Btn(homeFrame, width=25, height=1, text="Leaderboard", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:swapFrames(4))
     infoBtn = Btn(homeFrame, width=25, height=1, text="How to Play", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:swapFrames(5))
@@ -49,11 +50,12 @@ def initialiseMenu():
 
     # HOME FRAME PACKING
     homeLabel.pack(side="top", pady=(130, 0))
-    playBtn.pack(side="top", pady=(120, 0))
-    settingsBtn.pack(side="top", pady=(20, 0))
-    leaderboardBtn.pack(side="top", pady=(20, 0))
-    infoBtn.pack(side="top", pady=(20, 0))
-    exitBtn.pack(side="top", pady=(20, 0))
+    playBtn.pack(side="top", pady=(95, 0))
+    loadBtn.pack(side="top", pady=(10, 0))
+    settingsBtn.pack(side="top", pady=(10, 0))
+    leaderboardBtn.pack(side="top", pady=(10, 0))
+    infoBtn.pack(side="top", pady=(10, 0))
+    exitBtn.pack(side="top", pady=(10, 0))
 
     # SETTINGS FRAME WIDGETS
     global cheatsBtn
@@ -152,9 +154,10 @@ def initialiseMenu():
     infoHomeBtn.pack(side="top", pady=(90, 0))
 
     # PAUSE FRAME WIDGETS
+    global pauseInfoLabel, saveBtn, pauseHomeBtn
     pauseLabel = Label(pauseFrame, width=30, height=4, bg="pink", text="GAME PAUSED", font=("Comic Sans MS", 20, "bold"), borderwidth=3, relief="solid")
     pauseInfoLabel = Label(pauseFrame, width=30, height=6, bg="pink", text="Press Esc to unpause.\nExit to the home menu or\nsave your current game.", font=("Comic Sans MS", 18, "bold"), borderwidth=3, relief="solid")
-    saveBtn = Btn(pauseFrame, width=25, height=1, text="Save Game", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=saveGame)
+    saveBtn = Btn(pauseFrame, width=25, height=1, text="Save Game", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:saveGame(False))
     pauseHomeBtn = Btn(pauseFrame, width=25, height=1, text="Home", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:swapFrames(0))
 
     # PAUSE FRAME PACKING
@@ -187,6 +190,7 @@ def initialiseMenu():
 def swapFrames(frameNum):
     '''Swaps to a frame according to the given button press.'''
     if frameNum == 0: # Swap to the home frame
+        global paused, gameActive
         settingsFrame.pack_forget()
         leaderboardFrame.pack_forget()
         infoFrame.pack_forget()
@@ -195,6 +199,8 @@ def swapFrames(frameNum):
         homeFrame.pack(fill="both", expand=True)
         nameInput.delete(0, "end") # Disable entry box after going back home
         nameInput.configure(state="disabled")
+        paused = False
+        gameActive = False
     elif frameNum == 1: # Swap to the settings frame
         homeFrame.pack_forget()
         bgFrame.pack_forget()
@@ -290,6 +296,16 @@ def initialiseSettings():
         controls.append(setting)
     bgColour = settings.readline().strip()
     settings.close()
+
+    # Check if there is a save
+    global saveExists
+    saveFile = open("save.txt", "r")
+    time = saveFile.readline().strip()
+    if time == "":
+        saveExists = False
+    else:
+        saveExists = True
+    saveFile.close()
 
 def changeBackground(bgCode):
     '''Changes the colour of the backgrounds according to user input'''
@@ -395,7 +411,7 @@ def createLeaderboard():
     global leaderboard
     style = ttk.Style() # Configure style of leaderboard
     style.theme_use("clam")
-    style.configure("Treeview", fieldbackground="pink", font=("Comic Sans MS", 15, "bold"), rowheight=35)
+    style.configure("Treeview", font=("Comic Sans MS", 15, "bold"), rowheight=35)
     style.configure("Treeview.Heading", background="pink", font=("Comic Sans MS", 20, "bold"))
     leaderboard = ttk.Treeview(leaderboardFrame, columns=("name", "time", "score"), show="headings")
     leaderboard.column("name", anchor="center") # Give leaderboard headings
@@ -426,10 +442,9 @@ def populateLeaderboard():
 
 def addToLeaderboard():
     '''Take user input and add it to the leaderboard.'''
-    global cheats
+    global cheats, cheated
 
     # Check if they cheated
-    cheated = False
     for cheat in cheats:
         if cheat:
             cheated = True
@@ -462,7 +477,7 @@ def addToLeaderboard():
             leaderboard.delete(line)
         
         # Repopulate leaderboard with new entry
-        newEntry = [name, str(displayTime), str(score)]
+        newEntry = [name, str(time), str(score)]
         placed = False
         for line in range(numOfEntries):
             if score < int(treeviewData[line][1]):
@@ -491,8 +506,6 @@ def saveLeaderboard():
 
 #---------------------------------------------- CHEAT CODE FUNCTIONS -----------------------------------------------------------------------
 
-#                          ONLY UPDATE LEADERBOARD IF USING NO CHEATS BY CHECKING 'CHEATS' ARRAY
-
 def cancelCheatCode(event):
     '''Resets the cheat code for misinputs.'''
     global cheatCode
@@ -514,7 +527,7 @@ def changeCheats(cheatNum):
 
 #---------------------------------------------- GAME FUNCTIONS -----------------------------------------------------------------------
 
-def initialiseGame():
+def initialiseGame(loaded):
     '''Sets up all of the variables and conditions in order to play the game, then starts the game loop.'''
     # Hide the menu and create the game canvas
     homeFrame.pack_forget()
@@ -523,16 +536,23 @@ def initialiseGame():
     gameCanvas.pack(fill="both", expand=True)
 
     # Create all of the variables needed
-    global time, displayTime, score, numBalls, balls, xSpeed, ySpeed, playerDirectionX, playerDirectionY
-    time = 0
-    displayTime = 0
-    score = 0
-    numBalls = 0
-    balls = [] # Stores all the balls created
-    xSpeed = [] # Stores speed values for each ball
-    ySpeed = []
+    global time, score, numBalls, balls, xSpeed, ySpeed, playerDirectionX, playerDirectionY, saved, playerCoords, ballPos, cheated
+    if loaded == False: # Only use default numbers if game wasn't loaded
+        time = 0
+        score = 0
+        numBalls = 0
+        balls = [] # Stores all the balls created
+        xSpeed = [] # Stores speed values for each ball
+        ySpeed = []
+        playerCoords = (935, 515, 985, 565)
+        cheated = False
+    else:
+        balls = []
+        for ball in ballPos:
+            balls.append(gameCanvas.create_oval(ball[0], ball[1], ball[2], ball[3], fill=ball[4], width=2))
     playerDirectionX = 7
     playerDirectionY = 0
+    saved = False
 
     # Create all abilities
     global abilities, slowed, slowCount, invincible, invincibleCount
@@ -549,40 +569,36 @@ def initialiseGame():
     # Create player
     global player
     if cheats[0] == True: # If smaller player cheat is enabled, make smaller player
-        xy = (950, 530, 970, 550)
-    else:
-        xy = (935, 515, 985, 565)
-    player = gameCanvas.create_rectangle(xy, fill="light blue", outline="black", width=2)
+        playerCoords = (playerCoords[0]+15, playerCoords[1]+15, playerCoords[2]-15, playerCoords[3]-15)
+    player = gameCanvas.create_rectangle(playerCoords, fill="light blue", outline="black", width=2)
 
     # Make all text and rectangles behind the text
-    global scoreText, invincibilityText, invincibilityTextRectangle, invincibilityTextCount, slowText, slowTextCount, slowTextRectangle, timeText, timeTextCount, ballText, ballTextCount, ballTextRectangle, countdownText
-    scoreText = gameCanvas.create_text(1825, 30, text="Score: " + str(score), font=("Comic Sans MS", 20, "bold"))
+    global saveBtn, scoreText, invincibilityText, invincibilityTextRectangle, invincibilityTextCount, slowText, slowTextCount, slowTextRectangle, timeText, ballText, ballTextCount, ballTextRectangle, countdownText
+    saveBtn.configure(text="Save Game")
+    scoreText = gameCanvas.create_text(1800, 30, text="Score: " + str(score), font=("Comic Sans MS", 20, "bold"))
     bbox = gameCanvas.bbox(scoreText)
     scoreTextRectangle = gameCanvas.create_rectangle(bbox[0]-25, bbox[1], bbox[2]+25, bbox[3], outline="black", width=2)
+    invincibilityTextCount = 0
     invincibilityText = gameCanvas.create_text(135, 30, text="Invincibility: 0", font=("Comic Sans MS", 20, "bold"))
     bbox = gameCanvas.bbox(invincibilityText)
     invincibilityTextRectangle = gameCanvas.create_rectangle(bbox[0]-25, bbox[1], bbox[2]+25, bbox[3], outline="black", width=2)
-    invincibilityTextCount = 0
     gameCanvas.lower(invincibilityTextRectangle, invincibilityText) # Puts the rectangle behind the text
+    slowTextCount = 0
     slowText = gameCanvas.create_text(385, 30, text="Slow Time: 0", font=("Comic Sans MS", 20, "bold"))
     bbox = gameCanvas.bbox(slowText)
     slowTextRectangle = gameCanvas.create_rectangle(bbox[0]-25, bbox[1], bbox[2]+25, bbox[3], outline="black", width=2)
-    slowTextCount = 0
-    gameCanvas.lower(slowTextRectangle, slowText) # Puts the rectangle behind the text
-    timeText = gameCanvas.create_text(1650, 30, text="Time: 0", font=("Comic Sans MS", 20, "bold"))
+    gameCanvas.lower(slowTextRectangle, slowText) # Puts the rectangle behind the text 
+    timeText = gameCanvas.create_text(1600, 30, text="Time: " + str(time), font=("Comic Sans MS", 20, "bold"))
     bbox = gameCanvas.bbox(timeText)
     timeTextRectangle = gameCanvas.create_rectangle(bbox[0]-25, bbox[1], bbox[2]+25, bbox[3], outline="black", width=2)
-    timeTextCount = 0
     gameCanvas.lower(timeTextRectangle, timeText) # Puts the rectangle behind the text
-    ballText = gameCanvas.create_text(960, 30, text="Time Until Next Ball: 5", font=("Comic Sans MS", 20, "bold"))
+    ballTextCount = 0
+    ballText = gameCanvas.create_text(960, 30, text="Time Until Next Ball: " + str(ballTextCount), font=("Comic Sans MS", 20, "bold"))
     bbox = gameCanvas.bbox(ballText)
     ballTextRectangle = gameCanvas.create_rectangle(bbox[0]-25, bbox[1], bbox[2]+25, bbox[3], outline="black", width=2)
-    ballTextCount = 0
     gameCanvas.lower(ballTextRectangle, ballText) # Puts the rectangle behind the text
     countdownText = gameCanvas.create_text(960, 540, text="3", font=("Comic Sans MS", 75, "bold"))
 
-    # Start with 1 ball
-    createBall()
     gameLoop()
 
 def countdown():
@@ -608,7 +624,7 @@ def gameLoop():
     scoreUpRepeatNum = gameCanvas.after(4000, lambda:updateCoords(0))
     timeRepeatNum = gameCanvas.after(1000, timer)
     scoreTimeRepeatNum = gameCanvas.after(250, increaseScore)
-    
+
     gameActive = True
     while gameActive and not paused:
         gameCanvas.move(player, playerDirectionX, playerDirectionY)
@@ -616,17 +632,15 @@ def gameLoop():
         checkPlayerCollision()
         sleep(0.005)
         displayScore = score
-        if time % 6 == 5: # Create ball every 5 seconds
-            time = 0
-            createBall()
-        if ballTextCount == 0:
+        if ballTextCount == 0: # Create ball every 5 seconds
             ballTextCount = 5
+            createBall()
             gameCanvas.itemconfigure(ballTextRectangle, fill="")
         elif ballTextCount == 1:
             gameCanvas.itemconfigure(ballTextRectangle, fill="red")
         gameCanvas.itemconfigure(ballText, text="Time Until Next Ball: " + str(ballTextCount))
         gameCanvas.itemconfigure(scoreText, text="Score: " + str(displayScore))
-        gameCanvas.itemconfigure(timeText, text="Time: " + str(displayTime))
+        gameCanvas.itemconfigure(timeText, text="Time: " + str(time))
         window.update()
 
     # Go to game over screen once game is finished only if loop wasn't finished by pause
@@ -641,9 +655,8 @@ def gameLoop():
 
 def timer():
     '''Adds one second to the universal timer'''
-    global time, displayTime, ballTextCount, timeRepeatNum
+    global time, ballTextCount, timeRepeatNum
     time += 1
-    displayTime += 1
     ballTextCount -= 1
     timeRepeatNum = gameCanvas.after(1000, timer)
 
@@ -835,11 +848,11 @@ def createBall():
     # If slow time ability is active, half speed values
     global slowed
     if slowed == True:
-        speedValues = [0, 5]
-        colourBounds = [3.75, 2.5, 1.25]
+        speedValues = [1, 5]
+        colourBounds = [4, 3, 1.5]
     else:
-        speedValues = [1, 10]
-        colourBounds = [7.5, 5, 2.5]
+        speedValues = [2, 10]
+        colourBounds = [8, 6, 3]
 
     # Generate speed values for ball
     tempX = 0
@@ -975,10 +988,118 @@ def deleteBallsCollision(pos):
     or pos[0] > pos2[2] and pos[2] < pos2[0] and pos[1] > pos2[3] and pos[3] < pos2[1]:
         deleteBalls()
 
-#---------------------------------------------- SAVE CURRENT GAME --------------------------------------------------------
+#---------------------------------------------- SAVE/LOAD GAME FUNCTIONS --------------------------------------------------------
 
-def saveGame():
-    pass
+def saveGame(override):
+    '''Saves the current state of the game into a text file that can be read from to load the game.'''
+    global time, score, numBalls, balls, xSpeed, ySpeed, saved, cheated
+    if saved == True:
+        saveBtn.configure(text="Already saved.")
+    else:
+        saveFile = open("save.txt", "r")
+        line = saveFile.readline().strip()
+        saveFile.close()
+        if line != "" and override == False:
+            pauseInfoLabel.configure(text="Do you want to override the\nlast save?")
+            saveBtn.configure(text="Yes", command=lambda:overrideSave(True))
+            pauseHomeBtn.configure(text="No", command=lambda:overrideSave(False))
+            window.unbind("<Escape>")
+        else:
+            override = True
+        if override == True:
+            saveFile = open("save.txt", "w")
+            saveFile.write(str(time) + "\n")
+            saveFile.write(str(score) + "\n")
+            saveFile.write(str(numBalls) + "\n")
+            playerPos = gameCanvas.coords(player) # Write player coordinates
+            if cheats[0] == True:
+                for coordinate in range(4):
+                    if coordinate <= 1:
+                        saveFile.write(str(playerPos[coordinate]-15) + "\n")
+                    else:
+                        saveFile.write(str(playerPos[coordinate]+15) + "\n")
+            else:
+                for coordinate in range(4):
+                    saveFile.write(str(playerPos[coordinate]) + "\n")
+            for variable in range(3):
+                for ball in range(numBalls):
+                    if variable == 0: # Write all ball coordinates
+                        ballPos = gameCanvas.coords(balls[ball])
+                        for coordinate in ballPos:
+                            saveFile.write(str(coordinate) + "\n")
+                        saveFile.write(gameCanvas.itemcget(balls[ball], "fill") + "\n")
+                    elif variable == 1: # Write all x speeds
+                        saveFile.write(str(xSpeed[ball]) + "\n")
+                    else: # Write all y speeds
+                        saveFile.write(str(ySpeed[ball]) + "\n")
+            if cheats[0] == True or cheats[1] == True or cheated == True:
+                saveFile.write("True\n")
+            else:
+                saveFile.write("False\n")
+            saveFile.close()
+            saveBtn.configure(text="Saved!")
+            saved = True
+            gameCanvas.after(1000, lambda:swapFrames(0))
+
+def overrideSave(override):
+    '''Decides whether to override the save file or not.'''
+    if override == True:
+        pauseInfoLabel.configure(text="Press Esc to unpause.\nExit to the home menu or\nsave your current game.")
+        saveBtn.configure(command=lambda:saveGame(False))
+        pauseHomeBtn.configure(text="Home", command=lambda:swapFrames(0))
+        window.bind("<Escape>", pause)
+        saveGame(True)
+    else:
+        pauseInfoLabel.configure(text="Press Esc to unpause.\nExit to the home menu or\nsave your current game.")
+        saveBtn.configure(text="Save Game", command=lambda:saveGame(False))
+        pauseHomeBtn.configure(text="Home", command=lambda:swapFrames(0))
+        window.bind("<Escape>", pause)
+
+def loadGame():
+    '''Loads a game from the save.txt file, or ignores if game not found.'''
+    saveFile = open("save.txt", "r")
+    temp = saveFile.readline().strip()
+    if temp == "":
+        loadBtn.configure(text="No Game Found")
+        window.after(1000, lambda:loadBtn.configure(text="Load Game"))
+    else:
+        global saveExists, time, score, numBalls, playerCoords, ballPos, xSpeed, ySpeed, cheated
+        saveExists = False
+        loaded = True
+        time = int(temp)
+        score = int(saveFile.readline().strip())
+        numBalls = int(saveFile.readline().strip())
+        playerCoords = []
+        ballPos = []
+        xSpeed = []
+        ySpeed = []
+
+        for coordinate in range(4):
+            playerCoords.append(float(saveFile.readline().strip()))
+        playerCoords = (playerCoords[0], playerCoords[1], playerCoords[2], playerCoords[3])
+
+        for variable in range(3):
+            for ball in range(numBalls):
+                if variable == 0:
+                    tempBallPos = []
+                    for coordinate in range(4):
+                        tempBallPos.append(float(saveFile.readline().strip()))
+                    colour = saveFile.readline().strip()
+                    tempBallPos.append(colour)
+                    ballPos.append(tempBallPos)
+                elif variable == 1:
+                    xSpeed.append(int(saveFile.readline().strip()))
+                else:
+                    ySpeed.append(int(saveFile.readline().strip()))
+
+        cheated = bool(saveFile.readline().strip())
+
+        saveFile.close()
+
+        # Erase the save
+        open("save.txt", "w").close()
+
+        initialiseGame(True)
 
 #---------------------------------------------- MAIN PROGRAM --------------------------------------------------------
 
