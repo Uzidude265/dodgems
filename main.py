@@ -1,4 +1,10 @@
 # SCREEN RESOLUTION: 1920x1080
+# OBJECTIVES:
+# 1. CREATE IMAGES FOR ALL ABILITIES: GHOST FOR INVINCIBILITY, CLOCK FOR SLOW TIME, GREEN PLUS FOR +30, RECYCLING BIN FOR DELETE BALLS
+# 2. ADD +30 TEXT POPUP WHENEVER SCOREUP IS COLLECTED
+# 3. ABILITY TO CHANGE PLAYER COLOUR
+# 4. ADD TIPS/SECRETS TO THE HOW TO PLAY PAGE
+
 from tkinter import Tk, Frame, Button as Btn, Label, PhotoImage as Image, Canvas, Checkbutton as CheckBtn, ttk, Entry
 from time import sleep
 from random import randint
@@ -140,13 +146,13 @@ def initialiseMenu():
 
     # INFO FRAME WIDGETS
     infoLabel = Label(infoFrame, width=30, height=4, bg="pink", text="HOW TO PLAY", font=("Comic Sans MS", 20, "bold"), borderwidth=3, relief="solid")
-    howToPlayLabel = Label(infoFrame, width=60, height=12, bg="pink", text=howToPlayText, font=("Comic Sans MS", 15, "bold"), borderwidth=3, relief="solid")
+    howToPlayLabel = Label(infoFrame, width=60, height=16, bg="pink", text=howToPlayText, font=("Comic Sans MS", 14, "bold"), borderwidth=3, relief="solid")
     infoHomeBtn = Btn(infoFrame, width=25, height=1, text="Home", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:swapFrames(0))
 
     # INFO FRAME PACKING
     infoLabel.pack(side="top", pady=(150, 0))
-    howToPlayLabel.pack(side="top", pady=(50, 0))
-    infoHomeBtn.pack(side="top", pady=(90, 0))
+    howToPlayLabel.pack(side="top", pady=(20, 0))
+    infoHomeBtn.pack(side="top", pady=(20, 0))
 
     # PAUSE FRAME WIDGETS
     global pauseInfoLabel, saveBtn, pauseHomeBtn
@@ -283,17 +289,20 @@ def exitGame():
 def initialiseSettings():
     '''Initialise all the settings and read settings.txt file to get saved settings.'''
     #Initialise unsaved settings
-    global triggeredKeybindChange, keybindNum, controls, bgColour, previousBind, howToPlayText, cheatCode, cheats, bossEnabled, gameActive, paused, pauseFrameActive
+    global triggeredKeybindChange, keybindNum, controls, bgColour, previousBind, howToPlayText, cheatCode, cheats, bossEnabled, gameActive, paused, pauseFrameActive, slowed, invincible
     triggeredKeybindChange = False # Checks if player clicked button to change keybind
     keybindNum = 0
     previousBind = "" # Used when unbinding previous key
-    howToPlayText = "Dodge the never-ending balls as long as you can!\nThe colour of the balls indicates their speed.\n\n(Black = Slow, Blue = Medium, Purple = Fast, Red = Very Fast)\n\nEvery 3 seconds, a new ball gets added at the sides, so watch out!\nYour final score is the number of balls you ended with.\n\nGood Luck!"
+    howToPlayText = "Dodge the never-ending balls as long as you can!\n\nThe colour of the balls indicates their speed.\n(Black = Slow, Blue = Medium, Purple = Fast, Red = Very Fast)\nEvery 5 seconds, a new ball gets added at the sides, so watch out!\n\nThere are numerous abilities to help you out:\nGreen Square: +30 Points\nWhite Square: Invincibility\nOrange Square: Slow Time\nBlue Square: Delete 3 Random Balls\n\nP.S. Touching the walls is an instakill!\n\nGood Luck!"
     cheatCode = "" # Keeps track of keys pressed to check if they enter a cheat code
     cheats = [False, False] # Checks what cheats are enabled
     bossEnabled = False # Checks if the boss frame is active or not
     gameActive = False
     paused = False
     pauseFrameActive = False # Used by bossKey to check if the pause frame is showing
+    slowed = False
+    invincible = False
+
 
     # Get saved settings from settings.txt file
     controls = []
@@ -649,13 +658,12 @@ def gameLoop():
     randomizeRepeatNum = gameCanvas.after(12000, randomizeAbility)
     timeRepeatNum = gameCanvas.after(1000, timer)
     scoreTimeRepeatNum = gameCanvas.after(250, increaseScore)
-    if gameCanvas.coords(abilities[0]) == [0, 0, 0, 0]:
+    if gameCanvas.coords(abilities[0]) == [0, 0, 0, 0]: # Only start after function to spawn in scoreUp ability if it isn't already displayed
         scoreUpRepeatNum = gameCanvas.after(4000, lambda:updateCoords(0))
     else:
         scoreUpRepeatNum = 0
 
-    # Keep the status of the abilities
-    
+    # Keep the status of the abilities if unpaused or loaded from save file
     if slowTextCount != 0:
         if slowTextCount != 1:
             gameCanvas.itemconfigure(slowTextRectangle, fill="lime")
@@ -672,7 +680,7 @@ def gameLoop():
         gameCanvas.itemconfigure(invincibilityText, text="Invincibility: " + str(invincibilityTextCount))
         invincibilityTextRepeatNum = gameCanvas.after(1000, updateInvincibilityText)
         disableInvincibilityRepeatNum = gameCanvas.after(invincibilityTextCount*1000, disableInvincibility)
-        gameCanvas.itemconfigure(player, fill="lime")
+        gameCanvas.itemconfigure(player, fill="#a1fc03")
 
     # Main game loop
     gameActive = True
@@ -1083,8 +1091,8 @@ def hit():
     updateHearts()
     invincibility(True)
     gameCanvas.itemconfigure(livesTextRectangle, fill="#fc0390")
-    sleep(0.35)
-    gameCanvas.after(1000, lambda:gameCanvas.itemconfigure(livesTextRectangle, fill=""))
+    sleep(0.5)
+    gameCanvas.after(1500, lambda:gameCanvas.itemconfigure(livesTextRectangle, fill=""))
     if lives == 0:
         gameActive = False
 
