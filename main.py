@@ -563,7 +563,7 @@ def initialiseGame(loaded):
         playerCoords = (935, 515, 985, 565)
         cheated = False
         lives = 3
-        ballTextCount = 0
+        ballTextCount = 5
         slowed = False
         slowTextCount = 0
         slowCount = 0 # Stores how many slow time power ups they have collected
@@ -652,7 +652,7 @@ def countdown():
 
 def gameLoop():
     '''The main game loop that repeats until the game ends, then switches to the game over screen.'''
-    global gameActive, time, score, paused, randomizeRepeatNum, scoreUpRepeatNum, timeRepeatNum, scoreTimeRepeatNum, ballTextCount, slowTextRepeatNum, unslowRepeatNum, invincibilityTextRepeatNum, disableInvincibilityRepeatNum, slowed, invincible
+    global gameActive, paused, randomizeRepeatNum, scoreUpRepeatNum, timeRepeatNum, scoreTimeRepeatNum, slowTextRepeatNum, unslowRepeatNum, invincibilityTextRepeatNum, disableInvincibilityRepeatNum, slowed, invincible
     countdown()
 
     # Start all after loops
@@ -663,6 +663,11 @@ def gameLoop():
         scoreUpRepeatNum = gameCanvas.after(4000, lambda:updateCoords(0))
     else:
         scoreUpRepeatNum = 0
+
+    # Create first ball only if new game
+    if balls == []:
+        createBall(False)
+        createBall(True)
 
     # Keep the status of the abilities if unpaused or loaded from save file
     if slowTextCount != 0:
@@ -686,24 +691,15 @@ def gameLoop():
     # Main game loop
     gameActive = True
     while gameActive and not paused:
+        sleep(0.005)
         gameCanvas.move(player, playerDirectionX, playerDirectionY)
         moveBalls()
         checkPlayerCollision()
-        sleep(0.005)
-        displayScore = score
-        if ballTextCount == 0: # Create ball every 5 seconds
-            ballTextCount = 5
-            createBall()
-            gameCanvas.itemconfigure(ballTextRectangle, fill="")
-        elif ballTextCount == 1:
-            gameCanvas.itemconfigure(ballTextRectangle, fill="red")
-        gameCanvas.itemconfigure(ballText, text="Time Until Next Ball: " + str(ballTextCount))
-        gameCanvas.itemconfigure(scoreText, text="Score: " + str(displayScore))
-        gameCanvas.itemconfigure(timeText, text="Time: " + str(time))
         window.update()
 
-    # Go to game over screen once game is finished only if loop wasn't finished by pause
+    # Go to game over screen once only if main game loop wasn't finished by pause
     if paused == False:
+        global score
         score = int(score)
         finalScoreLabel.configure(text="You scored " + str(score) + " points!\n\nEnter your name to save your score\nor exit to the menu")
         gameCanvas.after_cancel(randomizeRepeatNum) # Stop after loop from randomizing abilities
@@ -724,12 +720,29 @@ def timer():
     global time, ballTextCount, timeRepeatNum
     time += 1
     ballTextCount -= 1
+    updateBallText()
+    gameCanvas.itemconfigure(timeText, text="Time: " + str(time))
     timeRepeatNum = gameCanvas.after(1000, timer)
+
+def updateBallText():
+    '''Updates the text to display the time left before the next ball spawns in.'''
+    global ballTextCount
+    if ballTextCount == 0: # Create ball every 5 seconds
+        ballTextCount = 5
+        createBall(True) # Start moving the new ball
+        gameCanvas.itemconfigure(ballTextRectangle, fill="")
+    elif ballTextCount == 2: # Start warning for new ball
+        gameCanvas.itemconfigure(ballTextRectangle, fill="orange")
+    elif ballTextCount == 1:
+        gameCanvas.itemconfigure(ballTextRectangle, fill="red")
+        createBall(False) # Create ball but don't move it yet
+    gameCanvas.itemconfigure(ballText, text="Time Until Next Ball: " + str(ballTextCount))
 
 def increaseScore():
     '''Increases the score by 4 every second.'''
     global score, scoreTimeRepeatNum
     score += 1
+    gameCanvas.itemconfigure(scoreText, text="Score: " + str(score))
     scoreTimeRepeatNum = gameCanvas.after(250, increaseScore)
 
 def updateHearts():
@@ -927,11 +940,8 @@ def editInfoText(text):
     '''Takes a parameter text and edits the info text correspondingly.'''
     global textBuffer
     if text != None: # If this function was called by hideInfoText, don't add text to buffer
-        print(text)
         textBuffer.append(text)
-        print(textBuffer)
     if len(textBuffer) == 1 or text == None: # If there isn't any other text being displayed, display it
-        print("Updated")
         gameCanvas.itemconfigure(gameInfoText, text=textBuffer[0], state="normal")
         gameCanvas.after(1250, hideInfoText) # Hide the text afterwards
 
@@ -940,71 +950,74 @@ def hideInfoText():
     global textBuffer
     gameCanvas.itemconfigure(gameInfoText, state="hidden")
     textBuffer.pop(0)
-    print(textBuffer)
     if textBuffer != []:
         editInfoText(None)
 
 #---------------------------------------------- BALL FUNCTIONS -----------------------------------------------------------------------
 
-def createBall():
+def createBall(move):
     '''Creates a new ball and appends it to an array, along with its corresponding x and y speed and colour.'''
-    # Choose starting point for ball
-    side = randint(0,3) # Choose a side to start at
-    if side == 0: # Up
-        xPos = randint(50,1870)
-        yPos = 10
-    elif side == 1: # Down
-        xPos = randint(50,1870)
-        yPos = 1040
-    elif side == 2: # Left
-        xPos = 10
-        yPos = randint(50,1030)
-    else: # Right
-        xPos = 1880
-        yPos = randint(50,1030)
+    # Create the ball but don't start moving it
+    if not move:
+        # Choose starting point for ball
+        side = randint(0,3) # Choose a side to start at
+        if side == 0: # Up
+            xPos = randint(50,1870)
+            yPos = 10
+        elif side == 1: # Down
+            xPos = randint(50,1870)
+            yPos = 1040
+        elif side == 2: # Left
+            xPos = 10
+            yPos = randint(50,1030)
+        else: # Right
+            xPos = 1880
+            yPos = randint(50,1030)
 
-    # Create ball
-    xy = (xPos, yPos, xPos+20, yPos+20)
-    balls.append(gameCanvas.create_oval(xy, fill="#ff0000", width=2))
+        # Create ball and set its speed to 0
+        global numBalls
+        xy = (xPos, yPos, xPos+20, yPos+20)
+        balls.append(gameCanvas.create_oval(xy, fill="black", width=2))
+        numBalls += 1
+        xSpeed.append(0)
+        ySpeed.append(0)
 
-    # If slow time ability is active, half speed values
-    global slowed
-    if slowed == True:
-        speedValues = [1, 5]
-        colourBounds = [4, 3, 2]
+    # Move the ball by giving its speed and colour
     else:
-        speedValues = [2, 10]
-        colourBounds = [8, 6, 4]
+        # If slow time ability is active, half speed values
+        global slowed
+        if slowed == True:
+            speedValues = [1, 5]
+            colourBounds = [4, 3, 2]
+        else:
+            speedValues = [2, 10]
+            colourBounds = [8, 6, 4]
 
-    # Generate speed values for ball
-    tempX = 0
-    tempY = 0
-    while tempX == 0 and tempY == 0: # Cannot have a ball standing still
-        tempX = randint(speedValues[0], speedValues[1]) # Get random speed values for x and y
-        tempY = randint(speedValues[0], speedValues[1])
-    xSign = randint(0,1) # Determine direction (positive or negative speed)
-    ySign = randint(0,1)
-    if xSign == 0:
-        tempX = -tempX # Make direction Left (-x), else Right
-    if ySign == 0:
-        tempY = -tempY # Make direction Up (-y), else Down
-    xSpeed.append(tempX)
-    ySpeed.append(tempY)
+        # Generate speed values for ball
+        tempX = 0
+        tempY = 0
+        while tempX == 0 and tempY == 0: # Cannot have a ball standing still
+            tempX = randint(speedValues[0], speedValues[1]) # Get random speed values for x and y
+            tempY = randint(speedValues[0], speedValues[1])
+        xSign = randint(0,1) # Determine direction (positive or negative speed)
+        ySign = randint(0,1)
+        if xSign == 0:
+            tempX = -tempX # Make direction Left (-x), else Right
+        if ySign == 0:
+            tempY = -tempY # Make direction Up (-y), else Down
+        xSpeed[numBalls-1] = tempX
+        ySpeed[numBalls-1] = tempY
 
-    # Determine colour of ball based on speed (Black < Blue < Purple < Red)
-    averageSpeed = (abs(tempX) + abs(tempY))/2
-    global numBalls
-    if averageSpeed >= colourBounds[0]:
-        gameCanvas.itemconfigure(balls[numBalls], fill="#ff0000", outline="black")
-    elif averageSpeed >= colourBounds[1]:
-        gameCanvas.itemconfigure(balls[numBalls], fill="#d303fc", outline="black")
-    elif averageSpeed >= colourBounds[2]:
-        gameCanvas.itemconfigure(balls[numBalls], fill="blue", outline="black")
-    else:
-        gameCanvas.itemconfigure(balls[numBalls], fill="black", outline="black")
-    
-    # Increment number of balls
-    numBalls += 1
+        # Determine colour of ball based on speed (Black < Blue < Purple < Red)
+        averageSpeed = (abs(tempX) + abs(tempY))/2
+        if averageSpeed >= colourBounds[0]:
+            gameCanvas.itemconfigure(balls[numBalls-1], fill="#ff0000", outline="black")
+        elif averageSpeed >= colourBounds[1]:
+            gameCanvas.itemconfigure(balls[numBalls-1], fill="#d303fc", outline="black")
+        elif averageSpeed >= colourBounds[2]:
+            gameCanvas.itemconfigure(balls[numBalls-1], fill="blue", outline="black")
+        else:
+            gameCanvas.itemconfigure(balls[numBalls-1], fill="black", outline="black")
 
 def moveBalls():
     '''Responsible for checking collisions with the wall, between balls and the player, and moving each ball.'''
