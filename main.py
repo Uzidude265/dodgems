@@ -1,7 +1,6 @@
 # SCREEN RESOLUTION: 1920x1080
 # OBJECTIVES:
 # 1. CREATE IMAGES FOR ALL ABILITIES: GHOST FOR INVINCIBILITY, CLOCK FOR SLOW TIME, GREEN PLUS FOR +30, RECYCLING BIN FOR DELETE BALLS
-# 2. ADD +30 TEXT POPUP WHENEVER SCOREUP IS COLLECTED
 # 3. ABILITY TO CHANGE PLAYER COLOUR
 # 4. ADD TIPS/SECRETS TO THE HOW TO PLAY PAGE
 
@@ -553,7 +552,7 @@ def initialiseGame(loaded):
     gameCanvas.pack(fill="both", expand=True)
 
     # Create all of the variables needed
-    global time, score, numBalls, balls, xSpeed, ySpeed, playerDirectionX, playerDirectionY, saved, playerCoords, ballPos, cheated, lives, ballTextCount, slowed, slowTextCount, slowCount, invincible, invincibilityTextCount, invincibilityCount, abilityCoords
+    global time, score, numBalls, balls, xSpeed, ySpeed, playerDirectionX, playerDirectionY, saved, textBuffer, playerCoords, ballPos, cheated, lives, ballTextCount, slowed, slowTextCount, slowCount, invincible, invincibilityTextCount, invincibilityCount, abilityCoords
     if loaded == False: # Only use default numbers if game wasn't loaded
         time = 0
         score = 0
@@ -579,6 +578,7 @@ def initialiseGame(loaded):
     playerDirectionX = 7
     playerDirectionY = 0
     saved = False
+    textBuffer = []
 
     # Create all abilities
     global abilities, abilityNum, previousAbility
@@ -732,10 +732,6 @@ def increaseScore():
     score += 1
     scoreTimeRepeatNum = gameCanvas.after(250, increaseScore)
 
-def hideInfoText():
-    '''Hides the text that appears in the middle of the screen whenever they get an ability or lose a life.'''
-    gameCanvas.itemconfigure(gameInfoText, state="hidden")
-
 def updateHearts():
     global heart, heartBroken, heart1, heart2, heart3, lives
     if lives == 3:
@@ -809,8 +805,7 @@ def scoreUp():
     gameCanvas.itemconfigure(abilities[0], state="hidden")
     gameCanvas.coords(abilities[0], 0, 0, 0, 0) # Move to top right to prevent overchecking collisions
     scoreUpRepeatNum = gameCanvas.after(4000, lambda:updateCoords(0)) # Place at random spot after 4 seconds
-    gameCanvas.itemconfigure(gameInfoText, text="+30 Score", fill="green", state="normal") # Display '+30 Score' to user and hide afterwards
-    gameCanvas.after(1250, hideInfoText)
+    editInfoText("+30 Score")
 
 def invincibility(invincibleFromMain):
     '''Gain invincibility from balls after collecting the invinsible ability.'''
@@ -821,8 +816,8 @@ def invincibility(invincibleFromMain):
         invincible = True # Start the ability
         disableInvincibilityRepeatNum = gameCanvas.after(5000, disableInvincibility)
         updateInvincibilityText()
-        gameCanvas.itemconfigure(gameInfoText, text="Invincible!", fill="pink", state="normal") # Display 'Invincible!' to user and hide afterwards
-        gameCanvas.after(1250, hideInfoText)
+        if not beenHit:
+            editInfoText("Invincible!")
     gameCanvas.itemconfigure(player, fill="#a1fc03")
     if not beenHit: # Only hide ability if the invincibility didn't occur due to the player being hit
         gameCanvas.coords(abilities[1], 0, 0, 0, 0) # Move to top right to prevent overchecking collisions
@@ -850,8 +845,7 @@ def slowTime(slowFromMain):
         ySpeed = [speed/2 for speed in ySpeed]
         unslowRepeatNum = gameCanvas.after(5000, unslowTime)
         updateSlowText()
-        gameCanvas.itemconfigure(gameInfoText, text="Time Slowed!", fill="blue", state="normal") # Display 'Time Slowed!' to user and hide afterwards
-        gameCanvas.after(1250, hideInfoText)
+        editInfoText("Time Slowed!")
     gameCanvas.coords(abilities[2], 0, 0, 0, 0) # Move to top right to prevent overchecking collisions
     gameCanvas.itemconfigure(abilities[2], state="hidden")
 
@@ -876,13 +870,14 @@ def deleteBalls():
     else: # Else delete 3 balls
         deleteNum = 3
         numBalls -= 3
-    for ball in range(deleteNum):
+    for ball in range(deleteNum): # Delete the balls
         tempBall = randint(0, len(balls)-1)
         xSpeed.pop(tempBall)
         ySpeed.pop(tempBall)
         tempBall = balls[tempBall]
         balls.remove(tempBall)
         gameCanvas.delete(tempBall)
+    editInfoText("3 Balls Deleted")
 
 def updateInvincibilityText():
     '''Updates the invincibility text with the amount of time left.'''
@@ -927,6 +922,27 @@ def updateSlowText():
         slowTextRepeatNum = gameCanvas.after(1000, updateSlowText)
     else:
         gameCanvas.itemconfigure(slowTextRectangle, fill="")
+
+def editInfoText(text):
+    '''Takes a parameter text and edits the info text correspondingly.'''
+    global textBuffer
+    if text != None: # If this function was called by hideInfoText, don't add text to buffer
+        print(text)
+        textBuffer.append(text)
+        print(textBuffer)
+    if len(textBuffer) == 1 or text == None: # If there isn't any other text being displayed, display it
+        print("Updated")
+        gameCanvas.itemconfigure(gameInfoText, text=textBuffer[0], state="normal")
+        gameCanvas.after(1250, hideInfoText) # Hide the text afterwards
+
+def hideInfoText():
+    '''Hides the text that appears in the middle of the screen whenever they get an ability or lose a life.'''
+    global textBuffer
+    gameCanvas.itemconfigure(gameInfoText, state="hidden")
+    textBuffer.pop(0)
+    print(textBuffer)
+    if textBuffer != []:
+        editInfoText(None)
 
 #---------------------------------------------- BALL FUNCTIONS -----------------------------------------------------------------------
 
@@ -1102,10 +1118,9 @@ def hit():
     updateHearts()
     invincibility(True) # Give the player temporary invulnerability after being hit
     gameCanvas.itemconfigure(livesTextRectangle, fill="#fc0390")
-    gameCanvas.itemconfigure(gameInfoText, text=str(lives) + " lives remaining", fill="red", state="normal") # Display the lives remaining then hide after
     sleep(0.5) # Freeze to emphasise being hit
-    gameCanvas.after(1250, hideInfoText)
     gameCanvas.after(1500, lambda:gameCanvas.itemconfigure(livesTextRectangle, fill=""))
+    editInfoText(str(lives) + " lives remaining")
     if lives == 0:
         gameActive = False
 
