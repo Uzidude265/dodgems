@@ -24,7 +24,8 @@ def initialiseMenu():
     initialiseSettings()
 
     # FRAMES
-    global homeFrame, settingsFrame, leaderboardFrame, infoFrame, gameOverFrame, playerColourFrame, bgFrame, keybindsFrame, cheatsFrame, bossFrame, pauseFrame
+    global homeFrame, settingsFrame, leaderboardFrame, infoFrame, gameOverFrame, playerColourFrame, \
+        bgFrame, keybindsFrame, cheatsFrame, bossFrame, pauseFrame
     homeFrame = Frame(window)
     settingsFrame = Frame(window)
     leaderboardFrame = Frame(window)
@@ -313,7 +314,8 @@ def swapFrames(frameNum):
 
 def bossKey(event):
     '''Activates whenever the boss key is pressed and displays an unsuspecting image.'''
-    global gameActive, bossEnabled, paused, pauseFrameActive, randomizeRepeatNum, scoreUpRepeatNum, timeRepeatNum, scoreTimeRepeatNum
+    global gameActive, bossEnabled, paused, pauseFrameActive, randomizeRepeatNum, \
+        scoreUpRepeatNum, timeRepeatNum, scoreTimeRepeatNum
     if gameActive == False:  # If at menu, place boss frame on top
         if bossEnabled == True:
             bossEnabled = False
@@ -370,7 +372,8 @@ def exitGame():
 def initialiseSettings():
     '''Initialise all the settings and read settings.txt file to get saved settings.'''
     # Initialise unsaved settings
-    global triggeredKeybindChange, keybindNum, controls, bgColour, playerColour, previousBind, howToPlayText, cheatCode, cheats, bossEnabled, gameActive, paused, pauseFrameActive, slowed, invincible
+    global triggeredKeybindChange, keybindNum, controls, bgColour, playerColour, previousBind, \
+        howToPlayText, cheatCode, cheats, bossEnabled, gameActive, paused, pauseFrameActive, slowed, invincible
     triggeredKeybindChange = False  # Checks if player clicked button to change keybind
     keybindNum = 0
     previousBind = ""  # Used when unbinding previous key
@@ -561,18 +564,12 @@ def populateLeaderboard():
     '''Reads the text file 'leaderboard.txt' and populates the leaderboard.'''
     leaderboardFile = open("leaderboard.txt", "r")
     tempName = leaderboardFile.readline().strip()
-    leaderboard.tag_configure("odd", background="pink")  # Create tags for rows
-    leaderboard.tag_configure("even", background="#fca7f5")
     rowNum = 0
     while tempName != "":  # Loop through the file until end of file is reached
         tempTime = leaderboardFile.readline().strip()
         tempScore = leaderboardFile.readline().strip()
-        if rowNum % 2 == 0:
-            leaderboard.insert("", "end", iid=rowNum, values=(
-                tempName, tempTime, tempScore), tags=("even",))  # NEEDS FIXING, DOESN'T CHANGE COLOUR
-        else:
-            leaderboard.insert("", "end", iid=rowNum, values=(
-                tempName, tempTime, tempScore), tags=("odd",))
+        leaderboard.insert("", "end", iid=rowNum, values=(
+            tempName, tempTime, tempScore))
         rowNum += 1
         tempName = leaderboardFile.readline().strip()
     leaderboardFile.close()
@@ -687,7 +684,9 @@ def initialiseGame(loaded):
     gameCanvas.pack(fill="both", expand=True)
 
     # Create all of the variables needed
-    global time, score, numBalls, balls, xSpeed, ySpeed, playerDirectionX, playerDirectionY, saved, textBuffer, playerCoords, ballPos, cheated, lives, ballTextCount, slowed, slowTextCount, slowCount, invincible, invincibilityTextCount, invincibilityCount, abilityCoords
+    global time, score, numBalls, balls, xSpeed, ySpeed, playerDirectionX, playerDirectionY, \
+        saved, textBuffer, playerCoords, ballPos, cheated, lives, ballTextCount, slowed, slowTextCount, \
+        slowCount, invincible, invincibilityTextCount, invincibilityCount, abilityCoords
     if loaded == False:  # Only use default numbers if game wasn't loaded
         time = 0
         score = 0
@@ -749,7 +748,9 @@ def initialiseGame(loaded):
     updateHearts()  # Update the hearts if they load the game
 
     # Make all text and rectangles behind the text
-    global saveBtn, scoreText, invincibilityText, invincibilityTextRectangle, slowText, slowTextRectangle, timeText, ballText, ballTextRectangle, countdownText, countdownTextRectangle, livesText, livesTextRectangle, gameInfoText
+    global saveBtn, scoreText, invincibilityText, invincibilityTextRectangle, slowText, \
+        slowTextRectangle, timeText, ballText, ballTextRectangle, countdownText, \
+        countdownTextRectangle, livesText, livesTextRectangle, gameInfoText
     saveBtn.configure(text="Save Game")
     scoreText = gameCanvas.create_text(
         1800, 30, text="Score: " + str(score), font=("Comic Sans MS", 20, "bold"))
@@ -820,7 +821,9 @@ def countdown():
 
 def gameLoop():
     '''The main game loop that repeats until the game ends, then switches to the game over screen.'''
-    global gameActive, paused, randomizeRepeatNum, scoreUpRepeatNum, timeRepeatNum, scoreTimeRepeatNum, slowTextRepeatNum, unslowRepeatNum, invincibilityTextRepeatNum, disableInvincibilityRepeatNum, slowed, invincible
+    global gameActive, paused, randomizeRepeatNum, scoreUpRepeatNum, timeRepeatNum, \
+        scoreTimeRepeatNum, slowTextRepeatNum, unslowRepeatNum, invincibilityTextRepeatNum, \
+        disableInvincibilityRepeatNum, slowed, invincible
     countdown()
     window.configure(cursor="none")
 
@@ -949,7 +952,8 @@ def updateHearts():
 
 def pause(event):
     '''Pause or unpause the game, and display the paused frame.'''
-    global paused, pauseFrameActive, gameActive, randomizeRepeatNum, scoreUpRepeatNum, timeRepeatNum, scoreTimeRepeatNum
+    global paused, pauseFrameActive, gameActive, randomizeRepeatNum, scoreUpRepeatNum, \
+        timeRepeatNum, scoreTimeRepeatNum
     if gameActive == True:  # Only change paused state if playing game
         if paused:
             paused = False
@@ -1376,7 +1380,8 @@ def hit():
 
 def saveGame(override):
     '''Saves the current state of the game into a text file that can be read from to load the game.'''
-    global time, score, numBalls, lives, ballTextCount, slowed, slowTextCount, slowCount, invincible, invincibilityTextCount, invincibilityCount, balls, xSpeed, ySpeed, saved, cheated
+    global time, score, numBalls, lives, ballTextCount, slowed, slowTextCount, slowCount, invincible, \
+        invincibilityTextCount, invincibilityCount, balls, xSpeed, ySpeed, saved, cheated
     if saved == True:
         saveBtn.configure(text="Already saved.")
     else:
@@ -1467,7 +1472,9 @@ def loadGame():
         loadBtn.configure(text="No Game Found")
         window.after(1000, lambda: loadBtn.configure(text="Load Game"))
     else:
-        global saveExists, loaded, time, score, numBalls, lives, ballTextCount, slowed, slowTextCount, slowCount, invincible, invincibilityTextCount, invincibilityCount, playerCoords, abilityCoords, ballPos, xSpeed, ySpeed, cheated
+        global saveExists, loaded, time, score, numBalls, lives, ballTextCount, \
+            slowed, slowTextCount, slowCount, invincible, invincibilityTextCount, \
+            invincibilityCount, playerCoords, abilityCoords, ballPos, xSpeed, ySpeed, cheated
         saveExists = False
         loaded = True
         time = int(temp)
