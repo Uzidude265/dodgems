@@ -21,8 +21,6 @@ def configureWindow():
 
 def initialiseMenu():
     '''Sets up the menu functionality, including the home page, settings page, leaderboard page, info page, and all respective titles and buttons.'''
-
-    # Set up all settings
     initialiseSettings()
 
     # FRAMES
@@ -376,7 +374,14 @@ def initialiseSettings():
     triggeredKeybindChange = False  # Checks if player clicked button to change keybind
     keybindNum = 0
     previousBind = ""  # Used when unbinding previous key
-    howToPlayText = "Dodge the never-ending balls as long as you can!\n\nThe colour of the balls indicates their speed.\n(Black = Slow, Blue = Medium, Purple = Fast, Red = Very Fast)\nEvery 5 seconds, a new ball gets added at the sides, so watch out!\n\nThere are numerous abilities to help you out:\nGreen Square: +30 Points\nWhite Square: Invincibility\nOrange Square: Slow Time\nBlue Square: Delete 3 Random Balls\n\nP.S. Touching the walls is an instakill!\n\nGood Luck!"
+    howToPlayText = "Dodge the never-ending balls as long as you can!" \
+        + "\n\nThe colour of the balls indicates their speed." \
+        + "\n(Black = Slow, Blue = Medium, Purple = Fast, Red = Very Fast)" \
+        + "\nEvery 5 seconds, a new ball gets added at the sides, so watch out!" \
+        + "\n\nThere are numerous abilities to help you out:" \
+        + "\nGreen Square: +30 Points\nWhite Square: Invincibility" \
+        + "\nOrange Square: Slow Time\nBlue Square: Delete 3 Random Balls" \
+        + "\n\nP.S. Touching the walls is an instakill!\n\nGood Luck!"
     cheatCode = ""  # Keeps track of keys pressed to check if they enter a cheat code
     cheats = [False, False]  # Checks what cheats are enabled
     bossEnabled = False  # Checks if the boss frame is active or not
@@ -502,6 +507,7 @@ def updateKeybind(event):
 
 
 def defaultSettings():
+    '''Uses the default settings provided.'''
     global bgColour, playerColour, controls
     bgColour = "#8ec8fa"
     for control in controls:
@@ -743,7 +749,7 @@ def initialiseGame(loaded):
     updateHearts()  # Update the hearts if they load the game
 
     # Make all text and rectangles behind the text
-    global saveBtn, scoreText, invincibilityText, invincibilityTextRectangle, slowText, slowTextRectangle, timeText, ballText, ballTextRectangle, countdownText, livesText, livesTextRectangle, gameInfoText
+    global saveBtn, scoreText, invincibilityText, invincibilityTextRectangle, slowText, slowTextRectangle, timeText, ballText, ballTextRectangle, countdownText, countdownTextRectangle, livesText, livesTextRectangle, gameInfoText
     saveBtn.configure(text="Save Game")
     scoreText = gameCanvas.create_text(
         1800, 30, text="Score: " + str(score), font=("Comic Sans MS", 20, "bold"))
@@ -780,6 +786,10 @@ def initialiseGame(loaded):
     gameCanvas.lower(ballTextRectangle, ballText)
     countdownText = gameCanvas.create_text(
         960, 540, text="3", font=("Comic Sans MS", 75, "bold"))
+    bbox = gameCanvas.bbox(countdownText)
+    countdownTextRectangle = gameCanvas.create_rectangle(
+        bbox[0]-75, bbox[1]-25, bbox[2]+75, bbox[3]+25, outline="black", fill="pink", width=2)
+    gameCanvas.lower(countdownTextRectangle, countdownText)
     livesText = gameCanvas.create_text(
         1665, 1020, text="Lives:", font=("Comic Sans MS", 20, "bold"))
     bbox = gameCanvas.bbox(livesText)
@@ -794,8 +804,9 @@ def initialiseGame(loaded):
 
 def countdown():
     '''Short countdown before the game starts'''
-    global countdownText
+    global countdownText, countdownTextRectangle
     gameCanvas.itemconfigure(countdownText, state="normal")
+    gameCanvas.itemconfigure(countdownTextRectangle, state="normal")
     for i in range(3, 0, -1):
         gameCanvas.itemconfigure(countdownText, text=str(i))
         window.update()
@@ -804,12 +815,14 @@ def countdown():
     window.update()
     sleep(1)
     gameCanvas.itemconfigure(countdownText, state="hidden")
+    gameCanvas.itemconfigure(countdownTextRectangle, state="hidden")
 
 
 def gameLoop():
     '''The main game loop that repeats until the game ends, then switches to the game over screen.'''
     global gameActive, paused, randomizeRepeatNum, scoreUpRepeatNum, timeRepeatNum, scoreTimeRepeatNum, slowTextRepeatNum, unslowRepeatNum, invincibilityTextRepeatNum, disableInvincibilityRepeatNum, slowed, invincible
     countdown()
+    window.configure(cursor="none")
 
     # Start all after loops
     randomizeRepeatNum = gameCanvas.after(12000, randomizeAbility)
@@ -876,6 +889,7 @@ def gameLoop():
         if invincible:
             gameCanvas.after_cancel(invincibilityTextRepeatNum)
             gameCanvas.after_cancel(disableInvincibilityRepeatNum)
+        window.configure(cursor="")  # Re-enable cursor
         swapFrames(6)  # Game Over screen
 
 
@@ -945,6 +959,7 @@ def pause(event):
             pauseFrame.pack_forget()
             gameLoop()
         else:
+            window.configure(cursor="")  # Re-enable cursor
             paused = True
             pauseFrameActive = True
             gameCanvas.pack_forget()  # Hide game and show pause frame
