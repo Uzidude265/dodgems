@@ -3,5 +3,5 @@
 <Left>
 <Right>
 <Control_L>
-#8ec8fa
-light blue
+#cbf7e6
+green
