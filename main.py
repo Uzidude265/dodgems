@@ -3,7 +3,7 @@
 # 1. CREATE IMAGES FOR ALL ABILITIES: GHOST FOR INVINCIBILITY, CLOCK FOR SLOW TIME, GREEN PLUS FOR +30, RECYCLING BIN FOR DELETE BALLS
 # 2. MAKE HOW TO PLAY PAGE INTO SEVERAL "PAGES" USING TEXT FILE (CHANGE LABEL WITH BUTTONS) (MAIN GAME, ABILITIES, GAME END, LEADERBOARD, KEYBINDS/PAUSE/BOSS KEY, CHEATS)
 
-from tkinter import Tk, Frame, Button as Btn, Label, PhotoImage as Image, Canvas, Checkbutton as CheckBtn, ttk, Entry
+from tkinter import Tk, Frame, Button as Btn, Label, PhotoImage as Image, Canvas, Checkbutton as CheckBtn, ttk, Entry, messagebox
 from time import sleep
 from random import randint
 
@@ -208,27 +208,27 @@ def initialiseMenu():
     global howToPlayLabel
     infoLabel = Label(infoFrame, width=30, height=4, bg="pink", text="HOW TO PLAY", font=(
         "Comic Sans MS", 20, "bold"), borderwidth=3, relief="solid")
-    howToPlayLabel = Label(infoFrame, width=60, height=12, bg="pink", text=howToPlay[0], font=(
+    howToPlayLabel = Label(infoFrame, width=70, height=12, bg="pink", text=howToPlay[0], font=(
         "Comic Sans MS", 14, "bold"), borderwidth=3, relief="solid")
     gameInfoBtn = Btn(infoFrame, width=15, height=1, text="Main Game", bg="light blue",
                       activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda: changeInfoLabel(howToPlay[0]))
     abilityInfoBtn = Btn(infoFrame, width=15, height=1, text="Abilities", bg="light blue",
-                      activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda: changeInfoLabel(howToPlay[1]))
+                         activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda: changeInfoLabel(howToPlay[1]))
     tipsInfoBtn = Btn(infoFrame, width=15, height=1, text="Tips", bg="light blue",
                       activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda: changeInfoLabel(howToPlay[2]))
     cheatsInfoBtn = Btn(infoFrame, width=1, height=1, text="", bg="light blue",
-                      activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda: changeInfoLabel(howToPlay[3]))
-    infoHomeBtn = Btn(infoFrame, width=25, height=1, text="Home", bg="light blue",
+                        activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda: changeInfoLabel(howToPlay[3]))
+    infoHomeBtn = Btn(infoFrame, width=15, height=1, text="Home", bg="light blue",
                       activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda: swapFrames(0))
 
     # INFO FRAME PACKING
     infoLabel.pack(side="top", pady=(150, 0))
-    howToPlayLabel.pack(side="top", pady=(20, 0))
-    gameInfoBtn.pack(side="left", anchor="nw", pady=(30, 0), padx=(600, 0))
-    abilityInfoBtn.pack(side="left", anchor="nw", pady=(30, 0), padx=(30, 0))
-    tipsInfoBtn.pack(side="left", anchor="nw", pady=(30, 0), padx=(30, 0))
-    cheatsInfoBtn.pack(side="left", anchor="nw", pady=(30, 0), padx=(30, 0))
-    infoHomeBtn.pack(side="top", pady=(20, 0), padx=(0, 500))
+    howToPlayLabel.pack(side="top", pady=(50, 0))
+    gameInfoBtn.pack(side="left", anchor="nw", pady=(50, 0), padx=(510, 0))
+    abilityInfoBtn.pack(side="left", anchor="nw", pady=(50, 0), padx=(30, 0))
+    tipsInfoBtn.pack(side="left", anchor="nw", pady=(50, 0), padx=(30, 0))
+    cheatsInfoBtn.pack(side="left", anchor="nw", pady=(50, 0), padx=(30, 0))
+    infoHomeBtn.pack(side="left", anchor="nw", pady=(50, 0), padx=(30, 0))
 
     # PAUSE FRAME WIDGETS
     global pauseInfoLabel, saveBtn, pauseHomeBtn
@@ -381,9 +381,12 @@ def bossKey(event):
 
 def exitGame():
     '''Save all settings and current leaderboard state, then close the game.'''
-    saveSettings()
-    saveLeaderboard()
-    window.destroy()
+    answer = messagebox.askquestion(
+        title="Exit", message="Are you sure you want to quit?")
+    if answer == "yes":
+        saveSettings()
+        saveLeaderboard()
+        window.destroy()
 
 
 # ---------------------------------------------- SETTINGS FUNCTIONS --------------------------------------------------------------------
@@ -701,6 +704,7 @@ def updateCheatCode(keyName):
     cheatCode += keyName
     if cheatCode == "unlockcheats":
         cheatsBtn.configure(command=lambda: swapFrames(7), bg="light blue")
+        messagebox.showinfo(title="UNLOCKED", message="Cheats Unlocked!")
 
 
 def changeCheats(cheatNum):
