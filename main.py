@@ -180,17 +180,20 @@ def initialiseMenu():
     cheatsLabel = Label(cheatsFrame, width=30, height=4, bg="pink", text="CHEATS", font=(
         "Comic Sans MS", 20, "bold"), borderwidth=3, relief="solid")
     smallerPlayerBtn = CheckBtn(cheatsFrame, width=25, height=2, text="Smaller Player", bg="light blue",
-                                activebackground="light blue", font=("Comic Sans MS", 15, "bold"), command=lambda: changeCheats(0))
-    invincibility = CheckBtn(cheatsFrame, width=25, height=2, text="Invincible", bg="light blue",
-                             activebackground="light blue", font=("Comic Sans MS", 15, "bold"), command=lambda: changeCheats(1))
+                                activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda: changeCheats(0))
+    invincibilityBtn = CheckBtn(cheatsFrame, width=25, height=2, text="Invincible", bg="light blue",
+                                activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda: changeCheats(1))
+    halfCooldownBtn = CheckBtn(cheatsFrame, width=25, height=2, text="Half Ability Cooldowns", bg="light blue",
+                               activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda: changeCheats(2))
     cheatsHomeBtn = Btn(cheatsFrame, width=25, height=1, text="Back to Settings", bg="light blue",
                         activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda: swapFrames(1))
 
     # CHEATS FRAME PACKING
     cheatsLabel.pack(side="top", pady=(150, 0))
-    smallerPlayerBtn.pack(side="top", pady=(170, 0))
-    invincibility.pack(side="top", pady=(20, 0))
-    cheatsHomeBtn.pack(side="top", pady=(160, 0))
+    smallerPlayerBtn.pack(side="top", pady=(110, 0))
+    invincibilityBtn.pack(side="top", pady=(20, 0))
+    halfCooldownBtn.pack(side="top", pady=(20, 0))
+    cheatsHomeBtn.pack(side="top", pady=(120, 0))
 
     # LEADERBOARD FRAME WIDGETS
     leaderboardLabel = Label(leaderboardFrame, width=30, height=4, bg="pink", text="LEADERBOARD", font=(
@@ -409,7 +412,7 @@ def initialiseSettings():
         + "\nOrange Square: Slow Time\nBlue Square: Delete 3 Random Balls" \
         + "\n\nP.S. Touching the walls is an instakill!\n\nGood Luck!"
     cheatCode = ""  # Keeps track of keys pressed to check if they enter a cheat code
-    cheats = [False, False]  # Checks what cheats are enabled
+    cheats = [False, False, False]  # Checks what cheats are enabled
     bossEnabled = False
     gameActive = False
     paused = False
@@ -869,12 +872,18 @@ def gameLoop():
     window.configure(cursor="none")
 
     # Start all after loops
-    randomizeRepeatNum = gameCanvas.after(12000, randomizeAbility)
+    if cheats[2] == True:
+        randomizeRepeatNum = gameCanvas.after(6000, randomizeAbility)
+    else:
+        randomizeRepeatNum = gameCanvas.after(12000, randomizeAbility)
     timeRepeatNum = gameCanvas.after(1000, timer)
     scoreTimeRepeatNum = gameCanvas.after(250, increaseScore)
     # Only start after function to spawn in scoreUp ability if it isn't already displayed
     if gameCanvas.coords(abilities[0]) == [0, 0, 0, 0]:
-        scoreUpRepeatNum = gameCanvas.after(4000, lambda: updateCoords(0))
+        if cheats[2] == True:
+            scoreUpRepeatNum = gameCanvas.after(2000, lambda: updateCoords(0))
+        else:
+            scoreUpRepeatNum = gameCanvas.after(2000, lambda: updateCoords(0))
     else:
         scoreUpRepeatNum = 0
 
@@ -1036,7 +1045,10 @@ def randomizeAbility():
         abilityNum = randint(1, 3)
     previousAbility = abilityNum
     updateCoords(abilityNum)
-    randomizeRepeatNum = gameCanvas.after(12000, randomizeAbility)
+    if cheats[2] == True:  # Half ability cool down if that cheat is on
+        randomizeRepeatNum = gameCanvas.after(6000, randomizeAbility)
+    else:
+        randomizeRepeatNum = gameCanvas.after(12000, randomizeAbility)
 
 
 def updateCoords(abilityNum):
@@ -1055,8 +1067,10 @@ def scoreUp():
     gameCanvas.itemconfigure(abilities[0], state="hidden")
     # Move to top right to prevent extra collisions
     gameCanvas.coords(abilities[0], 0, 0, 0, 0)
-    # Place at random spot after 4 seconds
-    scoreUpRepeatNum = gameCanvas.after(4000, lambda: updateCoords(0))
+    if cheats[2] == True:  # Half ability cool down if that cheat is on
+        scoreUpRepeatNum = gameCanvas.after(2000, lambda: updateCoords(0))
+    else:
+        scoreUpRepeatNum = gameCanvas.after(4000, lambda: updateCoords(0))
     editInfoText("+40 Score")
 
 
@@ -1508,7 +1522,7 @@ def saveGame(override):
                         saveFile.write(str(xSpeed[ball]) + "\n")
                     else:  # Write all y speeds
                         saveFile.write(str(ySpeed[ball]) + "\n")
-            if cheats[0] == True or cheats[1] == True or cheated == True:
+            if cheats[0] == True or cheats[1] == True or cheats[2] == True or cheated == True:
                 saveFile.write("True\n")
             else:
                 saveFile.write("False\n")
