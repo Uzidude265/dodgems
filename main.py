@@ -1,12 +1,11 @@
 # SCREEN RESOLUTION: 1920x1080
 # OBJECTIVES:
 # 1. CREATE IMAGES FOR ALL ABILITIES: GHOST FOR INVINCIBILITY, CLOCK FOR SLOW TIME, GREEN PLUS FOR +30, RECYCLING BIN FOR DELETE BALLS
-# 3. ABILITY TO CHANGE PLAYER COLOUR
-# 4. ADD TIPS/SECRETS TO THE HOW TO PLAY PAGE
 
 from tkinter import Tk, Frame, Button as Btn, Label, PhotoImage as Image, Canvas, Checkbutton as CheckBtn, ttk, Entry
 from time import sleep
 from random import randint
+
 
 def configureWindow():
     '''Creates a Tk object "window" and changes its attributes.'''
@@ -16,7 +15,9 @@ def configureWindow():
     window.geometry("1920x1080")
     window.attributes('-fullscreen', True)
 
+
 #---------------------------------------------- MENU FUNCTIONS --------------------------------------------------------------
+
 
 def initialiseMenu():
     '''Sets up the menu functionality, including the home page, settings page, leaderboard page, info page, and all respective titles and buttons.'''
@@ -206,6 +207,7 @@ def initialiseMenu():
     bossKeyImage = Label(bossFrame, image=bossImage)
     bossKeyImage.pack(fill="both", expand=True)
 
+
 def swapFrames(frameNum):
     '''Swaps to a frame according to the given button press.'''
     if frameNum == 0: # Swap to the home frame
@@ -257,6 +259,7 @@ def swapFrames(frameNum):
         settingsFrame.pack_forget()
         playerColourFrame.pack(fill="both", expand=True)
 
+
 def bossKey(event):
     '''Activates whenever the boss key is pressed and displays an unsuspecting image.'''
     global gameActive, bossEnabled, paused, pauseFrameActive, randomizeRepeatNum, scoreUpRepeatNum, timeRepeatNum, scoreTimeRepeatNum
@@ -300,13 +303,16 @@ def bossKey(event):
             pauseFrame.pack_forget()
             bossFrame.place(x=0, y=0)
 
+
 def exitGame():
     '''Save all settings and current leaderboard state, then close the game.'''
     saveSettings()
     saveLeaderboard()
     window.destroy()
 
+
 #---------------------------------------------- SETTINGS FUNCTIONS --------------------------------------------------------------------
+
 
 def initialiseSettings():
     '''Initialise all the settings and read settings.txt file to get saved settings.'''
@@ -347,6 +353,7 @@ def initialiseSettings():
         saveExists = True
     saveFile.close()
 
+
 def changeBackground(bgCode):
     '''Changes the colour of the backgrounds according to user input.'''
     # Get colour code from argument
@@ -365,11 +372,13 @@ def changeBackground(bgCode):
     cheatsFrame.configure(bg=bgColour)
     pauseFrame.configure(bg=bgColour)
 
+
 def changePlayerColour(playerCode):
     '''Changes the colour of the player colour according to user input.'''
     # Get colour code from argument
     global playerColour
     playerColour = playerCode
+
 
 def initialiseKeybinds():
     '''Bind the initial keybinds with their respective functions.'''
@@ -382,6 +391,7 @@ def initialiseKeybinds():
     window.bind("<Escape>", pause)
     window.bind("<Key>", updateKeybind)
 
+
 def setKeybindChange(tempNum):
     '''Sets the boolean state to true so that the player can then press the key and update their keybind.'''
     global triggeredKeybindChange, keybindNum, keybindsSettingsBtn
@@ -390,12 +400,14 @@ def setKeybindChange(tempNum):
     keybindNum = tempNum
     keybindsSettingsBtn.configure(text="Cancel", command=cancelKeybindChange) # Change button to a cancel button
 
+
 def cancelKeybindChange():
     '''Used if the user decides not to bind a key after clicking a button.'''
     global triggeredKeybindChange, keybindsPromptLabel, keybindsSettingsBtn
     triggeredKeybindChange = False #Reset variables
     keybindsPromptLabel.configure(text="Click a keybind to change")
     keybindsSettingsBtn.configure(text="Back to Settings", command=lambda:swapFrames(1)) # Change button back to normal
+
 
 def updateKeybind(event):
     '''Updates the keybind as long as they intended to, else adds the keypress to the cheat code buffer.'''
@@ -428,6 +440,7 @@ def updateKeybind(event):
             bossKeyBtn.configure(text="Boss Key: " + tempText)
             window.bind(controls[keybindNum], bossKey)
 
+
 def defaultSettings():
     global bgColour, playerColour, controls
     bgColour = "#8ec8fa"
@@ -443,6 +456,7 @@ def defaultSettings():
     changeBackground(bgColour)
     playerColour = "light blue"
 
+
 def saveSettings():
     '''Save the current settings in a text file for next time.'''
     global controls, bgColour, playerColour
@@ -453,7 +467,9 @@ def saveSettings():
     settings.write(playerColour)
     settings.close()
     
+
 #---------------------------------------------- LEADERBOARD FUNCTIONS -----------------------------------------------------------------------
+
 
 def createLeaderboard():
     '''Creates and formats the leaderboard with headings.'''
@@ -470,6 +486,7 @@ def createLeaderboard():
     leaderboard.column("score", anchor="center")
     leaderboard.heading("score", text="Score:")
     populateLeaderboard() # Fill the leaderboard
+
 
 def populateLeaderboard():
     '''Reads the text file 'leaderboard.txt' and populates the leaderboard.'''
@@ -488,6 +505,7 @@ def populateLeaderboard():
         rowNum += 1
         tempName = leaderboardFile.readline().strip()
     leaderboardFile.close()
+
 
 def addToLeaderboard():
     '''Take user input and add it to the leaderboard.'''
@@ -544,6 +562,7 @@ def addToLeaderboard():
         else:
             leaderboard.insert("", "end", iid=numOfEntries, values=(treeviewData[numOfEntries-1]))
 
+
 def saveLeaderboard():
     '''Writes the current state of the leaderboard to the file to save it for next time.'''
     global window
@@ -553,19 +572,23 @@ def saveLeaderboard():
             leaderboardFile.write(str(value)+"\n") # Write every entry to the text file
     leaderboardFile.close()
 
+
 #---------------------------------------------- CHEAT CODE FUNCTIONS -----------------------------------------------------------------------
+
 
 def cancelCheatCode(event):
     '''Resets the cheat code for misinputs.'''
     global cheatCode
     cheatCode = ""
  
+
 def updateCheatCode(keyName):
     '''Updates the cheat code and then checks if the player has inputted it correctly.'''
     global cheatCode, cheatsBtn
     cheatCode += keyName
     if cheatCode == "unlockcheats":
         cheatsBtn.configure(command=lambda:swapFrames(7), bg="light blue")
+
 
 def changeCheats(cheatNum):
     '''Enables or disables the cheat that the player chose.'''
@@ -574,7 +597,9 @@ def changeCheats(cheatNum):
     else:
         cheats[cheatNum] = True
 
+
 #---------------------------------------------- GAME FUNCTIONS -----------------------------------------------------------------------
+
 
 def initialiseGame(loaded):
     '''Sets up all of the variables and conditions in order to play the game, then starts the game loop.'''
@@ -670,6 +695,7 @@ def initialiseGame(loaded):
 
     gameLoop()
 
+
 def countdown():
     '''Short countdown before the game starts'''
     global countdownText
@@ -682,6 +708,7 @@ def countdown():
     window.update()
     sleep(1)
     gameCanvas.itemconfigure(countdownText, state="hidden")
+
 
 def gameLoop():
     '''The main game loop that repeats until the game ends, then switches to the game over screen.'''
@@ -748,6 +775,7 @@ def gameLoop():
             gameCanvas.after_cancel(disableInvincibilityRepeatNum)
         swapFrames(6) # Game Over screen
 
+
 def timer():
     '''Adds one second to the universal timer'''
     global time, ballTextCount, timeRepeatNum
@@ -756,6 +784,7 @@ def timer():
     updateBallText()
     gameCanvas.itemconfigure(timeText, text="Time: " + str(time))
     timeRepeatNum = gameCanvas.after(1000, timer)
+
 
 def updateBallText():
     '''Updates the text to display the time left before the next ball spawns in.'''
@@ -771,12 +800,14 @@ def updateBallText():
         createBall(False) # Create ball but don't move it yet
     gameCanvas.itemconfigure(ballText, text="Time Until Next Ball: " + str(ballTextCount))
 
+
 def increaseScore():
     '''Increases the score by 4 every second.'''
     global score, scoreTimeRepeatNum
     score += 1
     gameCanvas.itemconfigure(scoreText, text="Score: " + str(score))
     scoreTimeRepeatNum = gameCanvas.after(250, increaseScore)
+
 
 def updateHearts():
     global heart, heartBroken, heart1, heart2, heart3, lives
@@ -796,6 +827,7 @@ def updateHearts():
         gameCanvas.itemconfigure(heart1, image=heartBroken)
         gameCanvas.itemconfigure(heart2, image=heartBroken)
         gameCanvas.itemconfigure(heart3, image=heartBroken)
+
 
 def pause(event):                                    
     '''Pause or unpause the game, and display the paused frame.'''
@@ -827,6 +859,7 @@ def pause(event):
 
 #---------------------------------------------- POWER UP FUNCTIONS -----------------------------------------------------------------------
 
+
 def randomizeAbility():
     '''Chooses a random ability to put on the screen, or update its position if still on the screen.'''
     global randomizeRepeatNum, previousAbility, abilityNum
@@ -836,6 +869,7 @@ def randomizeAbility():
     updateCoords(abilityNum)
     randomizeRepeatNum = gameCanvas.after(12000, randomizeAbility)
 
+
 def updateCoords(abilityNum):
     '''Updates the coordinates of a given ability.'''
     global abilities
@@ -843,6 +877,7 @@ def updateCoords(abilityNum):
     yPos = randint(100,950)
     gameCanvas.coords(abilities[abilityNum], xPos, yPos, xPos+15, yPos+15)
     gameCanvas.itemconfigure(abilities[abilityNum], state="normal")
+
 
 def scoreUp():
     '''Increases the score by 30 after the scoreUp power-up is collected.'''
@@ -852,6 +887,7 @@ def scoreUp():
     gameCanvas.coords(abilities[0], 0, 0, 0, 0) # Move to top right to prevent overchecking collisions
     scoreUpRepeatNum = gameCanvas.after(4000, lambda:updateCoords(0)) # Place at random spot after 4 seconds
     editInfoText("+30 Score")
+
 
 def invincibility(invincibleFromMain):
     '''Gain invincibility from balls after collecting the invinsible ability.'''
@@ -871,6 +907,7 @@ def invincibility(invincibleFromMain):
     else:
         beenHit = False
 
+
 def disableInvincibility():
     '''Disabled invincibility after 5 seconds.'''
     global invincible, invincibilityCount
@@ -879,6 +916,7 @@ def disableInvincibility():
     invincibilityCount -= 1
     if invincibilityCount != 0: # If they collected more than 1 invincible ability, give it them again
         invincibility(False)
+
 
 def slowTime(slowFromMain):
     '''Slows the balls by half after collecting the slow time ability.'''
@@ -895,6 +933,7 @@ def slowTime(slowFromMain):
     gameCanvas.coords(abilities[2], 0, 0, 0, 0) # Move to top right to prevent overchecking collisions
     gameCanvas.itemconfigure(abilities[2], state="hidden")
 
+
 def unslowTime():
     '''Resets all ball speeds by doubling the speed value.'''
     global xSpeed, ySpeed, slowed, slowCount
@@ -904,6 +943,7 @@ def unslowTime():
     slowCount -= 1
     if slowCount != 0: # If they collected more than 1 slow ability, give it them again
         slowTime(False)
+
 
 def deleteBalls():
     '''Deletes 3 balls randomly after collecting the delete balls ability.'''
@@ -924,6 +964,7 @@ def deleteBalls():
         balls.remove(tempBall)
         gameCanvas.delete(tempBall)
     editInfoText("3 Balls Deleted")
+
 
 def updateInvincibilityText():
     '''Updates the invincibility text with the amount of time left.'''
@@ -947,6 +988,7 @@ def updateInvincibilityText():
     else:
         gameCanvas.itemconfigure(invincibilityTextRectangle, fill="")
 
+
 def updateSlowText():
     '''Updates the slow text with the amount of time left.'''
     global slowTextCount, slowTextRepeatNum
@@ -969,6 +1011,7 @@ def updateSlowText():
     else:
         gameCanvas.itemconfigure(slowTextRectangle, fill="")
 
+
 def editInfoText(text):
     '''Takes a parameter text and edits the info text correspondingly.'''
     global textBuffer
@@ -978,6 +1021,7 @@ def editInfoText(text):
         gameCanvas.itemconfigure(gameInfoText, text=textBuffer[0], state="normal")
         gameCanvas.after(1250, hideInfoText) # Hide the text afterwards
 
+
 def hideInfoText():
     '''Hides the text that appears in the middle of the screen whenever they get an ability or lose a life.'''
     global textBuffer
@@ -986,7 +1030,9 @@ def hideInfoText():
     if textBuffer != []:
         editInfoText(None)
 
+
 #---------------------------------------------- BALL FUNCTIONS -----------------------------------------------------------------------
+
 
 def createBall(move):
     '''Creates a new ball and appends it to an array, along with its corresponding x and y speed and colour.'''
@@ -1052,6 +1098,7 @@ def createBall(move):
         else:
             gameCanvas.itemconfigure(balls[numBalls-1], fill="black", outline="black")
 
+
 def moveBalls():
     '''Responsible for checking collisions with the wall, between balls and the player, and moving each ball.'''
     # Check every ball
@@ -1080,7 +1127,9 @@ def moveBalls():
         # Move ball using its speed values
         gameCanvas.move(balls[i], xSpeed[i], ySpeed[i])
 
+
 #---------------------------------------------- PLAYER FUNCTIONS ----------------------------------------------------
+
 
 def upDirection(event):
     '''Change the player's direction to up.'''
@@ -1088,11 +1137,13 @@ def upDirection(event):
     playerDirectionX = 0
     playerDirectionY = -7
 
+
 def downDirection(event):
     '''Change the player's direction to down.'''
     global playerDirectionX, playerDirectionY
     playerDirectionX = 0
     playerDirectionY = 7
+
 
 def leftDirection(event):
     '''Change the player's direction to left.'''
@@ -1100,11 +1151,13 @@ def leftDirection(event):
     playerDirectionX = -7
     playerDirectionY = 0
 
+
 def rightDirection(event):
     '''Change the player's direction to right.'''
     global playerDirectionX, playerDirectionY
     playerDirectionX = 7
     playerDirectionY = 0
+
 
 def checkPlayerCollision():
     '''Checks if the player is touching a ball, the wall or any abilities.'''
@@ -1128,12 +1181,14 @@ def checkPlayerCollision():
             or pos[0] > pos2[2] and pos[2] < pos2[0] and pos[1] > pos2[3] and pos[3] < pos2[1]: # Need to check if either side of player has collided
                 hit() # Decrease the lives
 
+
 def scoreUpCollision(pos):
     '''Takes the players position as argument and checks if they collided with the scoreUp ability'''
     pos2 = gameCanvas.coords(abilities[0])
     if pos[0] < pos2[2] and pos[2] > pos2[0] and pos[1] < pos2[3] and pos[3] > pos2[1] \
     or pos[0] > pos2[2] and pos[2] < pos2[0] and pos[1] > pos2[3] and pos[3] < pos2[1]:
         scoreUp()
+
 
 def invincibleCollision(pos):
     '''Takes the players position as argument and checks if they collided with the invincible ability'''
@@ -1142,6 +1197,7 @@ def invincibleCollision(pos):
     or pos[0] > pos2[2] and pos[2] < pos2[0] and pos[1] > pos2[3] and pos[3] < pos2[1]:
         invincibility(True)
 
+
 def slowTimeCollision(pos):
     '''Takes the players position as argument and checks if they collided with the slow time ability'''
     pos2 = gameCanvas.coords(abilities[2])
@@ -1149,12 +1205,14 @@ def slowTimeCollision(pos):
     or pos[0] > pos2[2] and pos[2] < pos2[0] and pos[1] > pos2[3] and pos[3] < pos2[1]:
         slowTime(True)
 
+
 def deleteBallsCollision(pos):
     '''Takes the players position as argument and checks if they collided with the delete balls ability'''
     pos2 = gameCanvas.coords(abilities[3])
     if pos[0] < pos2[2] and pos[2] > pos2[0] and pos[1] < pos2[3] and pos[3] > pos2[1] \
     or pos[0] > pos2[2] and pos[2] < pos2[0] and pos[1] > pos2[3] and pos[3] < pos2[1]:
         deleteBalls()
+
 
 def hit():
     '''Decreases the life if the player is hit, if they are on 0 lives, end the game.'''
@@ -1170,7 +1228,9 @@ def hit():
     if lives == 0:
         gameActive = False
 
+
 #---------------------------------------------- SAVE/LOAD GAME FUNCTIONS --------------------------------------------------------
+
 
 def saveGame(override):
     '''Saves the current state of the game into a text file that can be read from to load the game.'''
@@ -1235,6 +1295,7 @@ def saveGame(override):
             saved = True
             gameCanvas.after(1000, lambda:swapFrames(0))
 
+
 def overrideSave(override):
     '''Decides whether to override the save file or not.'''
     if override == True:
@@ -1248,6 +1309,7 @@ def overrideSave(override):
         saveBtn.configure(text="Save Game", command=lambda:saveGame(False))
         pauseHomeBtn.configure(text="Home", command=lambda:swapFrames(0))
         window.bind("<Escape>", pause)
+
 
 def loadGame():
     '''Loads a game from the save.txt file, or ignores if game not found.'''
@@ -1321,8 +1383,8 @@ def loadGame():
 
         initialiseGame(True)
 
-#---------------------------------------------- MAIN PROGRAM --------------------------------------------------------
 
+#---------------------------------------------- MAIN PROGRAM --------------------------------------------------------
 configureWindow() # Set up the window
 initialiseMenu() # Set up the menu
 changeBackground(bgColour) # Set up initial background colour
