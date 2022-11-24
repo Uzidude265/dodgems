@@ -1,6 +1,7 @@
 # SCREEN RESOLUTION: 1920x1080
 # OBJECTIVES:
 # 1. CREATE IMAGES FOR ALL ABILITIES: GHOST FOR INVINCIBILITY, CLOCK FOR SLOW TIME, GREEN PLUS FOR +30, RECYCLING BIN FOR DELETE BALLS
+# 2. MAKE HOW TO PLAY PAGE INTO SEVERAL "PAGES" USING TEXT FILE (CHANGE LABEL WITH BUTTONS) (MAIN GAME, ABILITIES, GAME END, LEADERBOARD, KEYBINDS/PAUSE/BOSS KEY, CHEATS)
 
 from tkinter import Tk, Frame, Button as Btn, Label, PhotoImage as Image, Canvas, Checkbutton as CheckBtn, ttk, Entry
 from time import sleep
@@ -887,6 +888,7 @@ def gameLoop():
             gameCanvas.after_cancel(invincibilityTextRepeatNum)
             gameCanvas.after_cancel(disableInvincibilityRepeatNum)
         window.configure(cursor="")  # Re-enable cursor
+        deathAnimation()
         swapFrames(6)  # Game Over screen
 
 
@@ -927,6 +929,8 @@ def increaseScore():
 def updateHearts():
     '''Update the heart images according to the number of lives they have.'''
     global heart, heartBroken, heart1, heart2, heart3, lives
+    gameCanvas.after(1500, lambda: gameCanvas.itemconfigure(
+        livesTextRectangle, fill=""))
     if lives == 3:
         gameCanvas.itemconfigure(heart1, image=heart)
         gameCanvas.itemconfigure(heart2, image=heart)
@@ -1087,6 +1091,10 @@ def deleteBalls():
         ySpeed.pop(tempBall)
         tempBall = balls[tempBall]
         balls.remove(tempBall)
+        tempCoords = gameCanvas.coords(tempBall)
+        gameCanvas.coords(tempBall, tempCoords[0]-20, tempCoords[1]-20, tempCoords[2]+20, tempCoords[3]+20)
+        window.update()
+        sleep(0.3)
         gameCanvas.delete(tempBall)
     editInfoText("3 Balls Deleted")
 
@@ -1340,17 +1348,51 @@ def hit():
     '''Decreases the life if the player is hit, if they are on 0 lives, end the game.'''
     global gameActive, lives, livesTextRectangle, beenHit
     lives -= 1
-    beenHit = True
     updateHearts()
-    # Give the player temporary invulnerability after being hit
-    invincibility(True)
-    gameCanvas.itemconfigure(livesTextRectangle, fill="#fc0390")
-    sleep(0.5)  # Freeze to emphasise being hit
-    gameCanvas.after(1500, lambda: gameCanvas.itemconfigure(
-        livesTextRectangle, fill=""))
-    editInfoText(str(lives) + " lives remaining")
+    if lives != 0:
+        hitAnimation(True)
+        beenHit = True
+        # Give the player temporary invulnerability after being hit
+        invincibility(True)
+        gameCanvas.itemconfigure(livesTextRectangle, fill="#fc0390")
+        editInfoText(str(lives) + " lives remaining")
     if lives == 0:
         gameActive = False
+
+def hitAnimation(repeat):
+    '''The animation that is played whenever the player is hit.'''
+    tempCoords = gameCanvas.coords(player)
+    if repeat == True:
+        gameCanvas.coords(player, tempCoords[0]+10, tempCoords[1]+10, tempCoords[2]-10, tempCoords[3]-10)
+        gameCanvas.itemconfigure(player, fill="red")
+        window.update()
+        sleep(0.3)
+        hitAnimation(False)
+    else:
+        gameCanvas.coords(player, tempCoords[0]-10, tempCoords[1]-10, tempCoords[2]+10, tempCoords[3]+10)
+        gameCanvas.itemconfigure(player, fill=playerColour)
+        window.update()
+        sleep(0.3)
+
+def deathAnimation():
+    '''When the player dies, shrink the player.'''
+    tempCoords = gameCanvas.coords(player)
+    gameCanvas.itemconfigure(player, fill="red")
+    for shrink in range(5):
+        for coordinate in range(4):
+            if coordinate <= 1:
+                if cheats[0] == True:
+                    tempCoords[coordinate] += 2
+                else:
+                    tempCoords[coordinate] += 5
+            else:
+                if cheats[0] == True:
+                    tempCoords[coordinate] -= 2
+                else:
+                    tempCoords[coordinate] -= 5
+        gameCanvas.coords(player, tempCoords)
+        window.update()
+        sleep(0.25)
 
 
 # ---------------------------------------------- SAVE/LOAD GAME FUNCTIONS --------------------------------------------------------
