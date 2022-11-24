@@ -801,6 +801,8 @@ def initialiseGame(loaded):
 def countdown():
     '''Short countdown before the game starts'''
     global countdownText, countdownTextRectangle
+    window.unbind("<Escape>")
+    window.unbind(controls[4])
     gameCanvas.itemconfigure(countdownText, state="normal")
     gameCanvas.itemconfigure(countdownTextRectangle, state="normal")
     for i in range(3, 0, -1):
@@ -812,6 +814,8 @@ def countdown():
     sleep(1)
     gameCanvas.itemconfigure(countdownText, state="hidden")
     gameCanvas.itemconfigure(countdownTextRectangle, state="hidden")
+    window.bind("<Escape>", pause)
+    window.bind(controls[4], bossKey)
 
 
 def gameLoop():
@@ -1003,15 +1007,15 @@ def updateCoords(abilityNum):
 
 
 def scoreUp():
-    '''Increases the score by 30 after the scoreUp power-up is collected.'''
+    '''Increases the score by 40 after the scoreUp power-up is collected.'''
     global score, abilities, scoreUpRepeatNum
-    score += 30
+    score += 40
     gameCanvas.itemconfigure(abilities[0], state="hidden")
     # Move to top right to prevent extra collisions
     gameCanvas.coords(abilities[0], 0, 0, 0, 0)
     # Place at random spot after 4 seconds
     scoreUpRepeatNum = gameCanvas.after(4000, lambda: updateCoords(0))
-    editInfoText("+30 Score")
+    editInfoText("+40 Score")
 
 
 def invincibility(invincibleFromMain):
@@ -1039,7 +1043,7 @@ def disableInvincibility():
     '''Disabled invincibility after 5 seconds.'''
     global invincible, invincibilityCount
     invincible = False
-    gameCanvas.itemconfigure(player, fill="light blue")
+    gameCanvas.itemconfigure(player, fill=playerColour)
     invincibilityCount -= 1
     if invincibilityCount != 0:  # If they collected more than 1 invincible ability, give it them again
         invincibility(False)
