@@ -1092,7 +1092,8 @@ def deleteBalls():
         tempBall = balls[tempBall]
         balls.remove(tempBall)
         tempCoords = gameCanvas.coords(tempBall)
-        gameCanvas.coords(tempBall, tempCoords[0]-20, tempCoords[1]-20, tempCoords[2]+20, tempCoords[3]+20)
+        gameCanvas.coords(
+            tempBall, tempCoords[0]-20, tempCoords[1]-20, tempCoords[2]+20, tempCoords[3]+20)
         window.update()
         sleep(0.3)
         gameCanvas.delete(tempBall)
@@ -1359,20 +1360,24 @@ def hit():
     if lives == 0:
         gameActive = False
 
+
 def hitAnimation(repeat):
     '''The animation that is played whenever the player is hit.'''
     tempCoords = gameCanvas.coords(player)
     if repeat == True:
-        gameCanvas.coords(player, tempCoords[0]+10, tempCoords[1]+10, tempCoords[2]-10, tempCoords[3]-10)
+        gameCanvas.coords(
+            player, tempCoords[0]+10, tempCoords[1]+10, tempCoords[2]-10, tempCoords[3]-10)
         gameCanvas.itemconfigure(player, fill="red")
         window.update()
         sleep(0.3)
         hitAnimation(False)
     else:
-        gameCanvas.coords(player, tempCoords[0]-10, tempCoords[1]-10, tempCoords[2]+10, tempCoords[3]+10)
+        gameCanvas.coords(
+            player, tempCoords[0]-10, tempCoords[1]-10, tempCoords[2]+10, tempCoords[3]+10)
         gameCanvas.itemconfigure(player, fill=playerColour)
         window.update()
         sleep(0.3)
+
 
 def deathAnimation():
     '''When the player dies, shrink the player.'''
