@@ -25,12 +25,13 @@ def initialiseMenu():
     initialiseSettings()
 
     # FRAMES
-    global homeFrame, settingsFrame, leaderboardFrame, infoFrame, gameOverFrame, bgFrame, keybindsFrame, cheatsFrame, bossFrame, pauseFrame
+    global homeFrame, settingsFrame, leaderboardFrame, infoFrame, gameOverFrame, playerColourFrame, bgFrame, keybindsFrame, cheatsFrame, bossFrame, pauseFrame
     homeFrame = Frame(window)
     settingsFrame = Frame(window)
     leaderboardFrame = Frame(window)
     infoFrame = Frame(window)
     gameOverFrame = Frame(window)
+    playerColourFrame = Frame(window)
     bgFrame = Frame(window)
     keybindsFrame = Frame(window)
     cheatsFrame = Frame(window)
@@ -60,6 +61,7 @@ def initialiseMenu():
     # SETTINGS FRAME WIDGETS
     global cheatsBtn
     settingsLabel = Label(settingsFrame, width=30, height=4, bg="pink", text="SETTINGS", font=("Comic Sans MS", 20, "bold"), borderwidth=3, relief="solid")
+    playerColourBtn = Btn(settingsFrame, width=25, height=1, text="Change Player Colour", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:swapFrames(8))
     bgBtn = Btn(settingsFrame, width=25, height=1, text="Change Background Colour", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:swapFrames(2))
     keybindsBtn = Btn(settingsFrame, width=25, height=1, text="Change Keybinds", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:swapFrames(3))
     defaultsBtn = Btn(settingsFrame, width=25, height=1, text="Reset to Default Settings", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=defaultSettings)
@@ -68,27 +70,44 @@ def initialiseMenu():
 
     # SETTINGS FRAME PACKING
     settingsLabel.pack(side="top", pady=(150, 0))
-    bgBtn.pack(side="top", pady=(105, 0))
-    keybindsBtn.pack(side="top", pady=(20, 0))
-    defaultsBtn.pack(side="top", pady=(20, 0))
-    cheatsBtn.pack(side="top", pady=(20, 0))
-    settingsHomeBtn.pack(side="top", pady=(120, 0))
+    playerColourBtn.pack(side="top", pady=(95, 0))
+    bgBtn.pack(side="top", pady=(10, 0))
+    keybindsBtn.pack(side="top", pady=(10, 0))
+    defaultsBtn.pack(side="top", pady=(10, 0))
+    cheatsBtn.pack(side="top", pady=(10, 0))
+    settingsHomeBtn.pack(side="top", pady=(95, 0))
+
+    # PLAYER COLOUR FRAME
+    playerColourLabel = Label(playerColourFrame, width=30, height=4, bg="pink", text="CHANGE PLAYER COLOUR", font=("Comic Sans MS", 20, "bold"), borderwidth=3, relief="solid")
+    bluePlayerBtn = Btn(playerColourFrame, width=25, height=1, text="Blue", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:changePlayerColour("light blue"))
+    orangePlayerBtn = Btn(playerColourFrame, width=25, height=1, text="Orange", bg="orange", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:changePlayerColour("orange"))
+    greenPlayerBtn = Btn(playerColourFrame, width=25, height=1, text="Green", bg="green", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:changePlayerColour("green"))
+    purplePlayerBtn = Btn(playerColourFrame, width=25, height=1, text="Purple", bg="purple", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:changePlayerColour("purple"))
+    playerColourSettingsBtn = Btn(playerColourFrame, width=25, height=1, text="Back to Settings", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:swapFrames(1))
+
+    # PLAYER COLOUR PACKING
+    playerColourLabel.pack(side="top", pady=(150, 0))
+    bluePlayerBtn.pack(side="top", pady=(110, 0))
+    orangePlayerBtn.pack(side="top", pady=(20, 0))
+    greenPlayerBtn.pack(side="top", pady=(20, 0))
+    purplePlayerBtn.pack(side="top", pady=(20, 0))
+    playerColourSettingsBtn.pack(side="top", pady=(110, 0))
 
     # BACKGROUND COLOUR FRAME
     bgLabel = Label(bgFrame, width=30, height=4, bg="pink", text="CHANGE BACKGROUND COLOUR", font=("Comic Sans MS", 20, "bold"), borderwidth=3, relief="solid")
-    greenBtn = Btn(bgFrame, width=25, height=1, text="Green", bg="#cbf7e6", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:changeBackground("#cbf7e6"))
-    redBtn = Btn(bgFrame, width=25, height=1, text="Red", bg="#edd3dc", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:changeBackground("#edd3dc"))
-    blueBtn = Btn(bgFrame, width=25, height=1, text="Blue", bg="#8ec8fa", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:changeBackground("#8ec8fa"))
-    yellowBtn = Btn(bgFrame, width=25, height=1, text="Yellow", bg="#fffcc2", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:changeBackground("#fffcc2"))
+    blueBgBtn = Btn(bgFrame, width=25, height=1, text="Blue", bg="#8ec8fa", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:changeBackground("#8ec8fa"))
+    greenBgBtn = Btn(bgFrame, width=25, height=1, text="Green", bg="#cbf7e6", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:changeBackground("#cbf7e6"))
+    redBgBtn = Btn(bgFrame, width=25, height=1, text="Red", bg="#edd3dc", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:changeBackground("#edd3dc"))
+    yellowBgBtn = Btn(bgFrame, width=25, height=1, text="Yellow", bg="#fffcc2", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:changeBackground("#fffcc2"))
     bgSettingsBtn = Btn(bgFrame, width=25, height=1, text="Back to Settings", bg="light blue", activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda:swapFrames(1))
 
     # BACKGROUND COLOUR PACKING
     bgLabel.pack(side="top", pady=(150, 0))
-    greenBtn.pack(side="top", pady=(110, 0))
-    redBtn.pack(side="top", pady=(20, 0))
-    blueBtn.pack(side="top", pady=(20, 0))
-    yellowBtn.pack(side="top", pady=(20, 0))
-    bgSettingsBtn.pack(side="top", pady=(120, 0))
+    blueBgBtn.pack(side="top", pady=(110, 0))
+    greenBgBtn.pack(side="top", pady=(20, 0))
+    redBgBtn.pack(side="top", pady=(20, 0))
+    yellowBgBtn.pack(side="top", pady=(20, 0))
+    bgSettingsBtn.pack(side="top", pady=(110, 0))
 
     # KEYBIND FRAME WIDGETS
     global upBtn, downBtn, leftBtn, rightBtn, bossKeyBtn, keybindsSettingsBtn, keybindsPromptLabel
@@ -114,7 +133,7 @@ def initialiseMenu():
     # KEYBIND FRAME PACKING
     keybindsLabel.pack(side="top", pady=(150, 0))
     keybindsPromptLabel.pack(side="top", pady=(30, 0))
-    upBtn.pack(side="top", pady=(50, 0))
+    upBtn.pack(side="top", pady=(45, 0))
     downBtn.pack(side="top", pady=(10, 0))
     leftBtn.pack(side="top", pady=(10, 0))
     rightBtn.pack(side="top", pady=(10, 0))
@@ -209,6 +228,7 @@ def swapFrames(frameNum):
             gameCanvas.after_cancel(disableInvincibilityRepeatNum)
     elif frameNum == 1: # Swap to the settings frame
         homeFrame.pack_forget()
+        playerColourFrame.pack_forget()
         bgFrame.pack_forget()
         keybindsFrame.pack_forget()
         cheatsFrame.pack_forget()
@@ -230,9 +250,12 @@ def swapFrames(frameNum):
         gameOverFrame.pack(fill="both", expand=True)
         submitBtn.configure(bg="light blue", relief="raised", command=addToLeaderboard) # Reset submit button
         nameInput.configure(state="normal") # Re-enable entry box
-    else: # Swap to the cheats frame
+    elif frameNum == 7: # Swap to the cheats frame
         settingsFrame.pack_forget()
         cheatsFrame.pack(fill="both", expand=True)
+    else: # Swap to the player colour frame
+        settingsFrame.pack_forget()
+        playerColourFrame.pack(fill="both", expand=True)
 
 def bossKey(event):
     '''Activates whenever the boss key is pressed and displays an unsuspecting image.'''
@@ -288,7 +311,7 @@ def exitGame():
 def initialiseSettings():
     '''Initialise all the settings and read settings.txt file to get saved settings.'''
     #Initialise unsaved settings
-    global triggeredKeybindChange, keybindNum, controls, bgColour, previousBind, howToPlayText, cheatCode, cheats, bossEnabled, gameActive, paused, pauseFrameActive, slowed, invincible
+    global triggeredKeybindChange, keybindNum, controls, bgColour, playerColour, previousBind, howToPlayText, cheatCode, cheats, bossEnabled, gameActive, paused, pauseFrameActive, slowed, invincible
     triggeredKeybindChange = False # Checks if player clicked button to change keybind
     keybindNum = 0
     previousBind = "" # Used when unbinding previous key
@@ -302,15 +325,16 @@ def initialiseSettings():
     slowed = False
     invincible = False
 
-
     # Get saved settings from settings.txt file
     controls = []
     bgColour = ""
+    playerColour = ""
     settings = open("settings.txt", "r")
     for setting in range(5):
         setting = settings.readline().strip()
         controls.append(setting)
     bgColour = settings.readline().strip()
+    playerColour = settings.readline().strip()
     settings.close()
 
     # Check if there is a save
@@ -324,7 +348,7 @@ def initialiseSettings():
     saveFile.close()
 
 def changeBackground(bgCode):
-    '''Changes the colour of the backgrounds according to user input'''
+    '''Changes the colour of the backgrounds according to user input.'''
     # Get colour code from argument
     global bgColour
     bgColour = bgCode
@@ -335,10 +359,17 @@ def changeBackground(bgCode):
     leaderboardFrame.configure(bg=bgColour)
     infoFrame.configure(bg=bgColour)
     gameOverFrame.configure(bg=bgColour)
+    playerColourFrame.configure(bg=bgColour)
     bgFrame.configure(bg=bgColour)
     keybindsFrame.configure(bg=bgColour)
     cheatsFrame.configure(bg=bgColour)
     pauseFrame.configure(bg=bgColour)
+
+def changePlayerColour(playerCode):
+    '''Changes the colour of the player colour according to user input.'''
+    # Get colour code from argument
+    global playerColour
+    playerColour = playerCode
 
 def initialiseKeybinds():
     '''Bind the initial keybinds with their respective functions.'''
@@ -398,8 +429,8 @@ def updateKeybind(event):
             window.bind(controls[keybindNum], bossKey)
 
 def defaultSettings():
-    global bgColour, controls
-    bgColour = "#cbf7e6"
+    global bgColour, playerColour, controls
+    bgColour = "#8ec8fa"
     for control in controls:
         window.unbind(control)
     controls = ["<Up>", "<Down>", "<Left>", "<Right>", "<Control_L>"]
@@ -410,14 +441,16 @@ def defaultSettings():
     rightBtn.configure(text="Right: Right")
     bossKeyBtn.configure(text="Boss Key: Control_L")
     changeBackground(bgColour)
+    playerColour = "light blue"
 
 def saveSettings():
     '''Save the current settings in a text file for next time.'''
-    global controls, bgColour
+    global controls, bgColour, playerColour
     settings = open("settings.txt", "w")
     for setting in controls:
         settings.write(setting + "\n")
-    settings.write(bgColour)
+    settings.write(bgColour + "\n")
+    settings.write(playerColour)
     settings.close()
     
 #---------------------------------------------- LEADERBOARD FUNCTIONS -----------------------------------------------------------------------
@@ -591,10 +624,10 @@ def initialiseGame(loaded):
     previousAbility = 0
 
     # Create player
-    global player, beenHit
+    global player, playerColour, beenHit
     if cheats[0] == True: # If smaller player cheat is enabled, make smaller player
         playerCoords = (playerCoords[0]+15, playerCoords[1]+15, playerCoords[2]-15, playerCoords[3]-15)
-    player = gameCanvas.create_rectangle(playerCoords, fill="light blue", outline="black", width=2)
+    player = gameCanvas.create_rectangle(playerCoords, fill=playerColour, outline="black", width=2)
     beenHit = False
 
     # Create and Modify Hearts
