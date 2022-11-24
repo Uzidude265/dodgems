@@ -4,4 +4,4 @@
 <Right>
 <Control_L>
 #8ec8fa
-purple
+light blue
