@@ -23,6 +23,7 @@ def configureWindow():
 def initialiseMenu():
     '''Sets up the menu functionality, including the home page, settings page, leaderboard page, info page, and all respective titles and buttons.'''
     initialiseSettings()
+    initialiseHowToPlay()
 
     # FRAMES
     global homeFrame, settingsFrame, leaderboardFrame, infoFrame, gameOverFrame, playerColourFrame, \
@@ -204,17 +205,30 @@ def initialiseMenu():
     leaderboardHomeBtn.pack(side="top", pady=(45, 0))
 
     # INFO FRAME WIDGETS
+    global howToPlayLabel
     infoLabel = Label(infoFrame, width=30, height=4, bg="pink", text="HOW TO PLAY", font=(
         "Comic Sans MS", 20, "bold"), borderwidth=3, relief="solid")
-    howToPlayLabel = Label(infoFrame, width=60, height=16, bg="pink", text=howToPlayText, font=(
+    howToPlayLabel = Label(infoFrame, width=60, height=12, bg="pink", text=howToPlay[0], font=(
         "Comic Sans MS", 14, "bold"), borderwidth=3, relief="solid")
+    gameInfoBtn = Btn(infoFrame, width=15, height=1, text="Main Game", bg="light blue",
+                      activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda: changeInfoLabel(howToPlay[0]))
+    abilityInfoBtn = Btn(infoFrame, width=15, height=1, text="Abilities", bg="light blue",
+                      activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda: changeInfoLabel(howToPlay[1]))
+    tipsInfoBtn = Btn(infoFrame, width=15, height=1, text="Tips", bg="light blue",
+                      activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda: changeInfoLabel(howToPlay[2]))
+    cheatsInfoBtn = Btn(infoFrame, width=1, height=1, text="", bg="light blue",
+                      activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda: changeInfoLabel(howToPlay[3]))
     infoHomeBtn = Btn(infoFrame, width=25, height=1, text="Home", bg="light blue",
                       activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda: swapFrames(0))
 
     # INFO FRAME PACKING
     infoLabel.pack(side="top", pady=(150, 0))
     howToPlayLabel.pack(side="top", pady=(20, 0))
-    infoHomeBtn.pack(side="top", pady=(20, 0))
+    gameInfoBtn.pack(side="left", anchor="nw", pady=(30, 0), padx=(600, 0))
+    abilityInfoBtn.pack(side="left", anchor="nw", pady=(30, 0), padx=(30, 0))
+    tipsInfoBtn.pack(side="left", anchor="nw", pady=(30, 0), padx=(30, 0))
+    cheatsInfoBtn.pack(side="left", anchor="nw", pady=(30, 0), padx=(30, 0))
+    infoHomeBtn.pack(side="top", pady=(20, 0), padx=(0, 500))
 
     # PAUSE FRAME WIDGETS
     global pauseInfoLabel, saveBtn, pauseHomeBtn
@@ -646,6 +660,30 @@ def saveLeaderboard():
         for value in leaderboard.item(entry)["values"]:
             leaderboardFile.write(str(value)+"\n")
     leaderboardFile.close()
+
+
+# ---------------------------------------------- HOW TO PLAY FUNCTIONS -----------------------------------------------------------------------
+
+
+def initialiseHowToPlay():
+    '''Gets the text for the how to play frame from the howToPlay.txt file.'''
+    global howToPlay
+    howToPlay = []
+    textFile = open("howToPlay.txt", "r")
+    for label in range(4):
+        paragraph = ""
+        tempText = textFile.readline().strip()
+        while tempText != "":
+            paragraph += tempText + "\n"
+            tempText = textFile.readline().strip()
+        howToPlay.append(paragraph)
+    textFile.close()
+
+
+def changeInfoLabel(labelText):
+    '''Changes the label on the how to play frame according to user input.'''
+    global howToPlayLabel
+    howToPlayLabel.configure(text=labelText)
 
 
 # ---------------------------------------------- CHEAT CODE FUNCTIONS -----------------------------------------------------------------------
