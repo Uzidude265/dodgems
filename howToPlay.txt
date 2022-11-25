@@ -7,10 +7,10 @@ Each time you are hit, you gain invulnerability for 5 seconds.
 Colliding into the wall is an instakill!
 
 There are numerous abilities to help you:
-Plus: +40 Score (this ability spawns every 4 seconds after collecting)
+Green Arrow: +40 Score (this ability spawns every 4 seconds after collecting)
 Ghost: Gain invulnerability from balls for 5 seconds (but not the wall!)
-Clock: Slows all of the balls by half their speed for 5 seconds
-Recycling Bin: Deletes 3 balls randomly
+Stopwatch: Slows all of the balls by half their speed for 5 seconds
+Error Symbol: Deletes 3 balls randomly
 All abilities (with the exception of Plus) spawn every 12 seconds at random.
 Note: the same ability cannot spawn in twice in a row.
 
