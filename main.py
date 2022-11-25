@@ -690,9 +690,10 @@ def initialiseHowToPlay():
     for label in range(4):
         paragraph = ""
         tempText = textFile.readline().strip()
-        while tempText != "":
+        while tempText != "/":
             paragraph += tempText + "\n"
             tempText = textFile.readline().strip()
+        paragraph = paragraph.rstrip()
         howToPlay.append(paragraph)
     textFile.close()
 
