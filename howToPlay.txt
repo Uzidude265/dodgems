@@ -18,7 +18,9 @@ Error Symbol: Deletes 3 balls randomly
 
 All abilities (with the exception of Plus) spawn every 12 seconds at random.
 
-Note: the same ability cannot spawn in twice in a row.
+Note: The same ability cannot spawn in twice in a row.
+Note 2: Abilities stack 
+(if you are invincible and you collect it again, youll be invincible again)
 /
 1. Collect as many Pluses as you can.
 You could survive the same amount of time but have more points.
