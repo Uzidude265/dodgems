@@ -1,11 +1,25 @@
 # SCREEN RESOLUTION: 1920x1080
-# OBJECTIVES:
-# 1. CREATE IMAGES FOR ALL ABILITIES: GHOST FOR INVINCIBILITY, CLOCK FOR SLOW TIME, GREEN PLUS FOR +30, RECYCLING BIN FOR DELETE BALLS
-# 2. MAKE HOW TO PLAY PAGE INTO SEVERAL "PAGES" USING TEXT FILE (CHANGE LABEL WITH BUTTONS) (MAIN GAME, ABILITIES, GAME END, LEADERBOARD, KEYBINDS/PAUSE/BOSS KEY, CHEATS)
 
-from tkinter import Tk, Frame, Button as Btn, Label, PhotoImage as Image, Canvas, Checkbutton as CheckBtn, ttk, Entry, messagebox
+# FUNCTION CHUNKS:
+# 1. MENU FUNCTIONS
+# 2. SETTINGS FUNCTIONS
+# 3. LEADERBOARD FUNCTIONS
+# 4. HOW TO PLAY FUNCTIONS
+# 5. CHEAT CODE FUNCTIONS
+# 6. GAME FUNCTIONS
+# 7. POWER UP FUNCTIONS
+# 8. BALL FUNCTIONS
+# 9. PLAYER FUNCTIONS
+# 10. SAVE/LOAD GAME FUNCTIONS
+# 11. MAIN PROGRAM
+
+from tkinter import Tk, Frame, Button as Btn, Label, PhotoImage as Image, \
+    Canvas, Checkbutton as CheckBtn, ttk, Entry, messagebox
 from time import sleep
 from random import randint
+
+
+# ---------------------------------------------- MENU FUNCTIONS --------------------------------------------------------------
 
 
 def configureWindow():
@@ -15,9 +29,6 @@ def configureWindow():
     window.title("Dodgems")
     window.geometry("1920x1080")
     window.attributes('-fullscreen', True)
-
-
-# ---------------------------------------------- MENU FUNCTIONS --------------------------------------------------------------
 
 
 def initialiseMenu():
@@ -672,7 +683,7 @@ def saveLeaderboard():
 
 
 def initialiseHowToPlay():
-    '''Gets the text for the how to play frame from the howToPlay.txt file.'''
+    '''Gets the text from the howToPlay.txt file for the how to play frame.'''
     global howToPlay
     howToPlay = []
     textFile = open("howToPlay.txt", "r")
@@ -749,7 +760,7 @@ def initialiseGame(loaded):
         invincible = False
         invincibilityTextCount = 0
         invincibilityCount = 0  # Stores how many invincible power ups they have collected
-        abilityCoords = [(0, 0, 0, 0) for x in range(4)]
+        abilityCoords = [(0, 0) for x in range(4)]
     else:
         balls = []
         for ball in ballPos:
@@ -761,18 +772,27 @@ def initialiseGame(loaded):
     textBuffer = []  # When multiple events occur, display them one at a time
 
     # Create all abilities
-    global abilities, abilityNum, previousAbility
+    global abilities, abilityNum, previousAbility, upArrow, ghost, clock, delete
+    upArrow = Image(file="UpArrow.png")
+    ghost = Image(file="Ghost.png")
+    clock = Image(file="Clock.png")
+    delete = Image(file="DeleteSymbol.png")
     abilities = []
-    abilities.append(gameCanvas.create_rectangle(
-        abilityCoords[0], fill="lime", outline="black", width=2))  # scoreUp ability
-    abilities.append(gameCanvas.create_rectangle(
-        abilityCoords[1], fill="white", outline="black", width=2))  # invincibility ability
-    abilities.append(gameCanvas.create_rectangle(
-        abilityCoords[2], fill="orange", outline="black", width=2))  # slow time ability
-    abilities.append(gameCanvas.create_rectangle(
-        abilityCoords[3], fill="cyan", outline="black", width=2))  # delete balls ability
+    abilities.append(gameCanvas.create_image(
+        abilityCoords[0], image=upArrow, state="hidden"))  # scoreUp ability
+    abilities.append(gameCanvas.create_image(
+        abilityCoords[1], image=ghost, state="hidden"))  # invincibility ability
+    abilities.append(gameCanvas.create_image(
+        abilityCoords[2], image=clock, state="hidden"))  # slow time ability
+    abilities.append(gameCanvas.create_image(
+        abilityCoords[3], image=delete, state="hidden"))  # delete balls ability
     abilityNum = 0
     previousAbility = 0
+
+    # Unhide any abilities that were showing if loaded from save
+    for ability in range(4):
+        if gameCanvas.coords(abilities[ability]) != [0, 0]:
+            gameCanvas.itemconfigure(abilities[ability], state="normal")
 
     # Create player
     global player, playerColour, beenHit
@@ -879,11 +899,11 @@ def gameLoop():
     timeRepeatNum = gameCanvas.after(1000, timer)
     scoreTimeRepeatNum = gameCanvas.after(250, increaseScore)
     # Only start after function to spawn in scoreUp ability if it isn't already displayed
-    if gameCanvas.coords(abilities[0]) == [0, 0, 0, 0]:
+    if gameCanvas.coords(abilities[0]) == [0, 0]:
         if cheats[2] == True:
             scoreUpRepeatNum = gameCanvas.after(2000, lambda: updateCoords(0))
         else:
-            scoreUpRepeatNum = gameCanvas.after(2000, lambda: updateCoords(0))
+            scoreUpRepeatNum = gameCanvas.after(4000, lambda: updateCoords(0))
     else:
         scoreUpRepeatNum = 0
 
@@ -1056,7 +1076,7 @@ def updateCoords(abilityNum):
     global abilities
     xPos = randint(100, 1790)
     yPos = randint(100, 950)
-    gameCanvas.coords(abilities[abilityNum], xPos, yPos, xPos+15, yPos+15)
+    gameCanvas.coords(abilities[abilityNum], xPos, yPos)
     gameCanvas.itemconfigure(abilities[abilityNum], state="normal")
 
 
@@ -1066,7 +1086,7 @@ def scoreUp():
     score += 40
     gameCanvas.itemconfigure(abilities[0], state="hidden")
     # Move to top right to prevent extra collisions
-    gameCanvas.coords(abilities[0], 0, 0, 0, 0)
+    gameCanvas.coords(abilities[0], 0, 0)
     if cheats[2] == True:  # Half ability cool down if that cheat is on
         scoreUpRepeatNum = gameCanvas.after(2000, lambda: updateCoords(0))
     else:
@@ -1089,7 +1109,7 @@ def invincibility(invincibleFromMain):
     gameCanvas.itemconfigure(player, fill="#a1fc03")
     if not beenHit:  # Only hide ability if the invincibility didn't occur due to the player being hit
         # Move to top right to prevent extra collisions
-        gameCanvas.coords(abilities[1], 0, 0, 0, 0)
+        gameCanvas.coords(abilities[1], 0, 0)
         gameCanvas.itemconfigure(abilities[1], state="hidden")
     else:
         beenHit = False
@@ -1118,7 +1138,7 @@ def slowTime(slowFromMain):
         updateSlowText()
         editInfoText("Time Slowed!")
     # Move to top right to prevent extra collisions
-    gameCanvas.coords(abilities[2], 0, 0, 0, 0)
+    gameCanvas.coords(abilities[2], 0, 0)
     gameCanvas.itemconfigure(abilities[2], state="hidden")
 
 
@@ -1137,7 +1157,7 @@ def deleteBalls():
     '''Deletes 3 balls randomly after collecting the delete balls ability.'''
     gameCanvas.itemconfigure(abilities[3], state="hidden")
     # Move to top right to prevent extra collisions
-    gameCanvas.coords(abilities[3], 0, 0, 0, 0)
+    gameCanvas.coords(abilities[3], 0, 0)
     global balls, numBalls, xSpeed, ySpeed
     if numBalls <= 2:  # If there are less than 3 balls on the screen, get rid of them all
         deleteNum = numBalls
@@ -1157,7 +1177,7 @@ def deleteBalls():
         window.update()
         sleep(0.3)
         gameCanvas.delete(tempBall)
-    editInfoText("3 Balls Deleted")
+    editInfoText(str(deleteNum) + " Balls Deleted")
 
 
 def updateInvincibilityText():
@@ -1376,6 +1396,7 @@ def checkPlayerCollision():
 def scoreUpCollision(pos):
     '''Takes the players position as argument and checks if they collided with the scoreUp ability'''
     pos2 = gameCanvas.coords(abilities[0])
+    pos2 = [pos2[0]-20, pos2[1]-25, pos2[0]+20, pos2[1]+25]
     if pos[0] < pos2[2] and pos[2] > pos2[0] and pos[1] < pos2[3] and pos[3] > pos2[1] \
             or pos[0] > pos2[2] and pos[2] < pos2[0] and pos[1] > pos2[3] and pos[3] < pos2[1]:
         scoreUp()
@@ -1384,6 +1405,7 @@ def scoreUpCollision(pos):
 def invincibleCollision(pos):
     '''Takes the players position as argument and checks if they collided with the invincible ability'''
     pos2 = gameCanvas.coords(abilities[1])
+    pos2 = [pos2[0]-20, pos2[1]-20, pos2[0]+20, pos2[1]+20]
     if pos[0] < pos2[2] and pos[2] > pos2[0] and pos[1] < pos2[3] and pos[3] > pos2[1] \
             or pos[0] > pos2[2] and pos[2] < pos2[0] and pos[1] > pos2[3] and pos[3] < pos2[1]:
         invincibility(True)
@@ -1392,6 +1414,7 @@ def invincibleCollision(pos):
 def slowTimeCollision(pos):
     '''Takes the players position as argument and checks if they collided with the slow time ability'''
     pos2 = gameCanvas.coords(abilities[2])
+    pos2 = [pos2[0]-20, pos2[1]-20, pos2[0]+20, pos2[1]+20]
     if pos[0] < pos2[2] and pos[2] > pos2[0] and pos[1] < pos2[3] and pos[3] > pos2[1] \
             or pos[0] > pos2[2] and pos[2] < pos2[0] and pos[1] > pos2[3] and pos[3] < pos2[1]:
         slowTime(True)
@@ -1400,6 +1423,7 @@ def slowTimeCollision(pos):
 def deleteBallsCollision(pos):
     '''Takes the players position as argument and checks if they collided with the delete balls ability'''
     pos2 = gameCanvas.coords(abilities[3])
+    pos2 = [pos2[0]-20, pos2[1]-20, pos2[0]+20, pos2[1]+20]
     if pos[0] < pos2[2] and pos[2] > pos2[0] and pos[1] < pos2[3] and pos[3] > pos2[1] \
             or pos[0] > pos2[2] and pos[2] < pos2[0] and pos[1] > pos2[3] and pos[3] < pos2[1]:
         deleteBalls()
@@ -1596,11 +1620,11 @@ def loadGame():
         # Load the ability coordinates
         for ability in range(4):
             tempCoords = []
-            for coordinate in range(4):
+            for coordinate in range(2):
                 coordinate = saveFile.readline().strip()
                 tempCoords.append(coordinate)
             abilityCoords.append(
-                (tempCoords[0], tempCoords[1], tempCoords[2], tempCoords[3]))
+                (tempCoords[0], tempCoords[1]))
 
         # Load ball information
         for variable in range(3):
