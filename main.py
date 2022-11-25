@@ -90,7 +90,8 @@ def initialiseMenu():
     defaultsBtn = Btn(settingsFrame, width=25, height=1, text="Reset to Default Settings", bg="light blue",
                       activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=defaultSettings)
     cheatsBtn = Btn(settingsFrame, width=25, height=1, text="Cheats", bg="red",
-                    activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=None)
+                    activebackground="cyan", font=("Comic Sans MS", 15, "bold"),
+                    command=lambda: messagebox.showerror(title="NOT UNLOCKED", message="You haven't unlocked the cheats yet."))
     settingsHomeBtn = Btn(settingsFrame, width=25, height=1, text="Home", bg="light blue",
                           activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda: swapFrames(0))
 
@@ -216,40 +217,44 @@ def initialiseMenu():
     # LEADERBOARD FRAME PACKING
     leaderboardLabel.pack(side="top", pady=(150, 0))
     leaderboard.pack(side="top", pady=(45, 0))
-    leaderboardHomeBtn.pack(side="top", pady=(45, 0))
+    leaderboardHomeBtn.pack(side="top", pady=(40, 0))
 
     # INFO FRAME WIDGETS
     global howToPlayLabel
     infoLabel = Label(infoFrame, width=30, height=4, bg="pink", text="HOW TO PLAY", font=(
         "Comic Sans MS", 20, "bold"), borderwidth=3, relief="solid")
-    howToPlayLabel = Label(infoFrame, width=70, height=12, bg="pink", text=howToPlay[0], font=(
+    cheatsInfoBtn = Btn(infoFrame, width=30, height=1, text="", bg="pink",
+                        activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda: changeInfoLabel(howToPlay[4]))
+    howToPlayLabel = Label(infoFrame, width=70, height=14, bg="pink", text=howToPlay[0], font=(
         "Comic Sans MS", 14, "bold"), borderwidth=3, relief="solid")
     gameInfoBtn = Btn(infoFrame, width=15, height=1, text="Main Game", bg="light blue",
                       activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda: changeInfoLabel(howToPlay[0]))
     abilityInfoBtn = Btn(infoFrame, width=15, height=1, text="Abilities", bg="light blue",
                          activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda: changeInfoLabel(howToPlay[1]))
+    gameFeaturesInfoBtn = Btn(infoFrame, width=15, height=1, text="Game Features", bg="light blue",
+                              activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda: changeInfoLabel(howToPlay[3]))
     tipsInfoBtn = Btn(infoFrame, width=15, height=1, text="Tips", bg="light blue",
                       activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda: changeInfoLabel(howToPlay[2]))
-    cheatsInfoBtn = Btn(infoFrame, width=1, height=1, text="", bg="light blue",
-                        activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda: changeInfoLabel(howToPlay[3]))
     infoHomeBtn = Btn(infoFrame, width=15, height=1, text="Home", bg="light blue",
                       activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda: swapFrames(0))
 
     # INFO FRAME PACKING
     infoLabel.pack(side="top", pady=(150, 0))
-    howToPlayLabel.pack(side="top", pady=(50, 0))
-    gameInfoBtn.pack(side="left", anchor="nw", pady=(50, 0), padx=(510, 0))
-    abilityInfoBtn.pack(side="left", anchor="nw", pady=(50, 0), padx=(30, 0))
-    tipsInfoBtn.pack(side="left", anchor="nw", pady=(50, 0), padx=(30, 0))
-    cheatsInfoBtn.pack(side="left", anchor="nw", pady=(50, 0), padx=(30, 0))
-    infoHomeBtn.pack(side="left", anchor="nw", pady=(50, 0), padx=(30, 0))
+    cheatsInfoBtn.pack(side="top", pady=(5, 0))
+    howToPlayLabel.pack(side="top", pady=(5, 0))
+    gameInfoBtn.pack(side="left", anchor="nw", pady=(30, 0), padx=(430, 0))
+    abilityInfoBtn.pack(side="left", anchor="nw", pady=(30, 0), padx=(30, 0))
+    gameFeaturesInfoBtn.pack(side="left", anchor="nw",
+                             pady=(30, 0), padx=(30, 0))
+    tipsInfoBtn.pack(side="left", anchor="nw", pady=(30, 0), padx=(30, 0))
+    infoHomeBtn.pack(side="left", anchor="nw", pady=(30, 0), padx=(30, 0))
 
     # PAUSE FRAME WIDGETS
     global pauseInfoLabel, saveBtn, pauseHomeBtn
     pauseLabel = Label(pauseFrame, width=30, height=4, bg="pink", text="GAME PAUSED", font=(
         "Comic Sans MS", 20, "bold"), borderwidth=3, relief="solid")
-    pauseInfoLabel = Label(pauseFrame, width=30, height=6, bg="pink", text="Press Esc to unpause.\nExit to the home menu or\nsave your current game.", font=(
-        "Comic Sans MS", 18, "bold"), borderwidth=3, relief="solid")
+    pauseInfoLabel = Label(pauseFrame, width=30, height=6, bg="pink", text="Press Esc to unpause.\nExit to the home menu or\nsave your current game.",
+                           font=("Comic Sans MS", 18, "bold"), borderwidth=3, relief="solid")
     saveBtn = Btn(pauseFrame, width=25, height=1, text="Save Game", bg="light blue",
                   activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda: saveGame(False))
     pauseHomeBtn = Btn(pauseFrame, width=25, height=1, text="Home", bg="light blue",
@@ -362,6 +367,7 @@ def bossKey(event):
             paused = False
             bossFrame.pack_forget()
             gameCanvas.pack(fill="both", expand=True)
+            window.bind("<Escape>", pause)
             gameLoop()  # Re-run game loop after unpausing
         else:
             bossEnabled = True
@@ -380,6 +386,7 @@ def bossKey(event):
             if invincible:
                 gameCanvas.after_cancel(invincibilityTextRepeatNum)
                 gameCanvas.after_cancel(disableInvincibilityRepeatNum)
+            window.unbind("<Escape>")
 
     # Else if the pause frame is showing, replace with boss frame
     elif pauseFrameActive == True:
@@ -387,10 +394,12 @@ def bossKey(event):
             bossEnabled = False
             bossFrame.place_forget()
             pauseFrame.pack(fill="both", expand=True)
+            window.bind("<Escape>", pause)
         else:
             bossEnabled = True
             pauseFrame.pack_forget()
             bossFrame.place(x=0, y=0)
+            window.unbind("<Escape>")
 
 
 def exitGame():
@@ -687,7 +696,7 @@ def initialiseHowToPlay():
     global howToPlay
     howToPlay = []
     textFile = open("howToPlay.txt", "r")
-    for label in range(4):
+    for label in range(5):
         paragraph = ""
         tempText = textFile.readline().strip()
         while tempText != "/":
@@ -894,9 +903,17 @@ def gameLoop():
 
     # Start all after loops
     if cheats[2] == True:
-        randomizeRepeatNum = gameCanvas.after(6000, randomizeAbility)
+        if time % 6 == 0:  # Preserve cooldown times
+            randomizeRepeatNum = gameCanvas.after(6000, randomizeAbility)
+        else:
+            randomizeRepeatNum = gameCanvas.after(
+                (6-(time % 6))*1000, randomizeAbility)
     else:
-        randomizeRepeatNum = gameCanvas.after(12000, randomizeAbility)
+        if time % 12 == 0:  # Preserve cooldown times
+            randomizeRepeatNum = gameCanvas.after(12000, randomizeAbility)
+        else:
+            randomizeRepeatNum = gameCanvas.after(
+                (12-(time % 12))*1000, randomizeAbility)
     timeRepeatNum = gameCanvas.after(1000, timer)
     scoreTimeRepeatNum = gameCanvas.after(250, increaseScore)
     # Only start after function to spawn in scoreUp ability if it isn't already displayed
@@ -1176,7 +1193,7 @@ def deleteBalls():
         gameCanvas.coords(
             tempBall, tempCoords[0]-20, tempCoords[1]-20, tempCoords[2]+20, tempCoords[3]+20)
         window.update()
-        sleep(0.3)
+        sleep(0.25)
         gameCanvas.delete(tempBall)
     editInfoText(str(deleteNum) + " Balls Deleted")
 
@@ -1194,7 +1211,9 @@ def updateInvincibilityText():
     # Configure colour of rectangle according to time left
     if invincibilityTextCount >= 3:
         gameCanvas.itemconfigure(invincibilityTextRectangle, fill="lime")
-    elif invincibilityTextCount == 2 or invincibilityTextCount == 1:
+    elif invincibilityTextCount == 2:
+        gameCanvas.itemconfigure(invincibilityTextRectangle, fill="orange")
+    elif invincibilityTextCount == 1:
         gameCanvas.itemconfigure(invincibilityTextRectangle, fill="red")
 
     # Call function again if timer isn't over
@@ -1217,7 +1236,9 @@ def updateSlowText():
     # Configure colour of rectangle according to time left
     if slowTextCount >= 3:
         gameCanvas.itemconfigure(slowTextRectangle, fill="lime")
-    elif slowTextCount == 2 or slowTextCount == 1:
+    elif slowTextCount == 2:
+        gameCanvas.itemconfigure(slowTextRectangle, fill="orange")
+    elif slowTextCount == 1:
         gameCanvas.itemconfigure(slowTextRectangle, fill="red")
 
     # Call function again if timer isn't over
@@ -1454,14 +1475,14 @@ def hitAnimation(repeat):
             player, tempCoords[0]+10, tempCoords[1]+10, tempCoords[2]-10, tempCoords[3]-10)
         gameCanvas.itemconfigure(player, fill="red")
         window.update()
-        sleep(0.3)
+        sleep(0.4)
         hitAnimation(False)
     else:
         gameCanvas.coords(
             player, tempCoords[0]-10, tempCoords[1]-10, tempCoords[2]+10, tempCoords[3]+10)
-        gameCanvas.itemconfigure(player, fill=playerColour)
         window.update()
-        sleep(0.3)
+        sleep(0.4)
+        gameCanvas.itemconfigure(player, fill=playerColour)
 
 
 def deathAnimation():
@@ -1482,7 +1503,7 @@ def deathAnimation():
                     tempCoords[coordinate] -= 5
         gameCanvas.coords(player, tempCoords)
         window.update()
-        sleep(0.25)
+        sleep(0.3)
 
 
 # ---------------------------------------------- SAVE/LOAD GAME FUNCTIONS --------------------------------------------------------
@@ -1641,7 +1662,11 @@ def loadGame():
                     xSpeed.append(float(saveFile.readline().strip()))
                 else:
                     ySpeed.append(float(saveFile.readline().strip()))
-        cheated = bool(saveFile.readline().strip())
+        cheated = saveFile.readline().strip()
+        if cheated == "True":
+            cheated = True
+        else:
+            cheated = False
         saveFile.close()
         open("save.txt", "w").close()  # Erase the save
         initialiseGame(True)
