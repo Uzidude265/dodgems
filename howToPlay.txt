@@ -16,7 +16,7 @@ Ghost: Gain invulnerability from balls for 5 seconds (but not the wall!)
 Stopwatch: Slows all of the balls by half their speed for 5 seconds
 Error Symbol: Deletes 3 balls randomly
 
-All abilities (with the exception of Plus) spawn every 12 seconds at random.
+All abilities (with the exception of the Arrow) spawn every 12 seconds at random.
 
 Note: The same ability cannot spawn in twice in a row.
 Note 2: Abilities stack 
@@ -31,6 +31,18 @@ You could leave the ability on-screen for later.
 
 3. Avoid the edges of the screen.
 The balls only ever spawn in from the sides, so watch out!
+/
+During the game, you can pause using Esc.
+There, you can save your game for later.
+
+At any point, you can press Control_L for the boss key.
+
+The settings contains all customisation options.
+The cheats are locked, see if you can figure out how to unlock them.
+
+At the game over screen, you can add your score to the leaderboard.
+You can view this leaderboard from the home screen.
+(If you cheated, you can't add your score, try it if you'd like :) )
 /
 You have found the hidden button!
 Enter "unlockcheats" on your keyboard to unlock the cheats menu.
