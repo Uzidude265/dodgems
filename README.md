@@ -1,3 +1,3 @@
-# Coursework 2
+# Dodgems
 
-This is the branch used for coursework 2.
+NOTE: There seems to be an issue with resolution not adjusting properly, as well as object movement relying on resolution.
