@@ -1,0 +1,7 @@
+<Up>
+<Down>
+<Left>
+<Right>
+<Control_L>
+#8ec8fa
+light blue

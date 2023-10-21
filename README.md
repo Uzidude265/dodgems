@@ -1,3 +1,3 @@
-# COMP16321-Labs
+# Coursework 2
 
-This is a test for tagging lab exercises.
+This is the branch used for coursework 2.
