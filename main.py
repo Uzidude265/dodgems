@@ -17,6 +17,10 @@ from tkinter import Tk, Frame, Button as Btn, Label, PhotoImage as Image, \
     Canvas, Checkbutton as CheckBtn, ttk, Entry, messagebox
 from time import sleep
 from random import randint
+import ctypes
+
+# Fixes DPI issue that caused window dimensions to be off
+ctypes.windll.shcore.SetProcessDpiAwareness(2)
 
 
 # ---------------------------------------------- MENU FUNCTIONS --------------------------------------------------------------
@@ -776,7 +780,7 @@ def initialiseGame(loaded):
         for ball in ballPos:
             balls.append(gameCanvas.create_oval(
                 ball[0], ball[1], ball[2], ball[3], fill=ball[4], width=2))
-    playerDirectionX = 7
+    playerDirectionX = 5
     playerDirectionY = 0
     saved = False
     textBuffer = []  # When multiple events occur, display them one at a time
@@ -833,13 +837,13 @@ def initialiseGame(loaded):
     scoreTextRectangle = gameCanvas.create_rectangle(
         bbox[0]-25, bbox[1], bbox[2]+25, bbox[3], outline="black", width=2)
     invincibilityText = gameCanvas.create_text(
-        135, 30, text="Invincibility: 0", font=("Comic Sans MS", 20, "bold"))
+        160, 30, text="Invincibility: 0", font=("Comic Sans MS", 20, "bold"))
     bbox = gameCanvas.bbox(invincibilityText)
     invincibilityTextRectangle = gameCanvas.create_rectangle(
         bbox[0]-25, bbox[1], bbox[2]+25, bbox[3], outline="black", width=2)
     gameCanvas.lower(invincibilityTextRectangle, invincibilityText)
     slowText = gameCanvas.create_text(
-        385, 30, text="Slow Time: 0", font=("Comic Sans MS", 20, "bold"))
+        450, 30, text="Slow Time: 0", font=("Comic Sans MS", 20, "bold"))
     bbox = gameCanvas.bbox(slowText)
     slowTextRectangle = gameCanvas.create_rectangle(
         bbox[0]-25, bbox[1], bbox[2]+25, bbox[3], outline="black", width=2)
@@ -1303,10 +1307,10 @@ def createBall(move):
         # If slow time ability is active, half speed values
         global slowed
         if slowed == True:
-            speedValues = [1, 5]
+            speedValues = [1, 4]
             colourBounds = [4, 3, 2]
         else:
-            speedValues = [2, 10]
+            speedValues = [2, 8]
             colourBounds = [8, 6, 4]
 
         # Generate speed and direction
@@ -1368,27 +1372,27 @@ def upDirection(event):
     '''Change the player's direction to up.'''
     global playerDirectionX, playerDirectionY
     playerDirectionX = 0
-    playerDirectionY = -7
+    playerDirectionY = -5
 
 
 def downDirection(event):
     '''Change the player's direction to down.'''
     global playerDirectionX, playerDirectionY
     playerDirectionX = 0
-    playerDirectionY = 7
+    playerDirectionY = 5
 
 
 def leftDirection(event):
     '''Change the player's direction to left.'''
     global playerDirectionX, playerDirectionY
-    playerDirectionX = -7
+    playerDirectionX = -5
     playerDirectionY = 0
 
 
 def rightDirection(event):
     '''Change the player's direction to right.'''
     global playerDirectionX, playerDirectionY
-    playerDirectionX = 7
+    playerDirectionX = 5
     playerDirectionY = 0
 
 
