@@ -756,7 +756,7 @@ def initialiseGame(loaded):
     # Create all of the variables needed
     global time, score, numBalls, balls, xSpeed, ySpeed, playerDirectionX, playerDirectionY, \
         saved, textBuffer, playerCoords, ballPos, cheated, lives, ballTextCount, slowed, slowTextCount, \
-        slowCount, invincible, invincibilityTextCount, invincibilityCount, abilityCoords
+        slowCount, invincible, invincibilityTextCount, invincibilityCount, abilityCoords, difficulty
     if loaded == False:  # Only use default numbers if game wasn't loaded from save file
         time = 0
         score = 0
@@ -775,6 +775,7 @@ def initialiseGame(loaded):
         invincibilityTextCount = 0
         invincibilityCount = 0  # Stores how many invincible power ups they have collected
         abilityCoords = [(0, 0) for x in range(4)]
+        difficulty = 1
     else:
         balls = []
         for ball in ballPos:
@@ -1004,6 +1005,7 @@ def updateBallText():
     global ballTextCount
     if ballTextCount == 0:  # Create ball every 5 seconds
         ballTextCount = 5
+        updateDifficulty()  # Update the difficulty every 5 seconds
         createBall(True)  # Start moving the new ball
         gameCanvas.itemconfigure(ballTextRectangle, fill="")
     elif ballTextCount == 2:  # Start warning for new ball
@@ -1076,6 +1078,13 @@ def pause(event):
                 gameCanvas.after_cancel(invincibilityTextRepeatNum)
                 gameCanvas.after_cancel(disableInvincibilityRepeatNum)
 
+def updateDifficulty():
+    '''Updates the difficulty every 30 seconds to speed up the balls'''
+    global difficulty
+    if time % 30 == 0 and difficulty < 3:
+        difficulty += 1
+        print("Time: " + str(time) + ", Difficulty: " + str(difficulty))
+        editInfoText("Difficulty up!")
 
 # ---------------------------------------------- POWER UP FUNCTIONS -----------------------------------------------------------------------
 
@@ -1305,12 +1314,23 @@ def createBall(move):
     # Move the ball by giving its speed and colour
     else:
         # If slow time ability is active, half speed values
-        global slowed
+        # Determine the speed based on the difficulty
+        global slowed, difficulty
         if slowed == True:
-            speedValues = [1, 4]
+            if difficulty == 1:
+                speedValues = [1, 2]
+            elif difficulty == 2:
+                speedValues = [1, 3]
+            else:
+                speedValues = [1, 5]
             colourBounds = [4, 3, 2]
         else:
-            speedValues = [2, 8]
+            if difficulty == 1:
+                speedValues = [2, 4]
+            elif difficulty == 2:
+                speedValues = [2, 6]
+            else:
+                speedValues = [2, 10]
             colourBounds = [8, 6, 4]
 
         # Generate speed and direction
