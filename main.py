@@ -1083,8 +1083,7 @@ def updateDifficulty():
     global difficulty
     if time % 30 == 0 and difficulty < 3:
         difficulty += 1
-        print("Time: " + str(time) + ", Difficulty: " + str(difficulty))
-        editInfoText("Difficulty up!")
+        editInfoText("Difficulty up!")  # Show the player that the difficulty went up
 
 # ---------------------------------------------- POWER UP FUNCTIONS -----------------------------------------------------------------------
 
