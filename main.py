@@ -1010,9 +1010,9 @@ def updateBallText():
         gameCanvas.itemconfigure(ballTextRectangle, fill="")
     elif ballTextCount == 2:  # Start warning for new ball
         gameCanvas.itemconfigure(ballTextRectangle, fill="orange")
+        createBall(False)  # Create ball but don't move it yet
     elif ballTextCount == 1:
         gameCanvas.itemconfigure(ballTextRectangle, fill="red")
-        createBall(False)  # Create ball but don't move it yet
     gameCanvas.itemconfigure(
         ballText, text="Time Until Next Ball: " + str(ballTextCount))
 
@@ -1083,7 +1083,7 @@ def updateDifficulty():
     global difficulty
     if time % 30 == 0 and difficulty < 3:
         difficulty += 1
-        editInfoText("Difficulty up!")  # Show the player that the difficulty went up
+        editInfoText("Difficulty up!", 2000)  # Show the player that the difficulty went up
 
 # ---------------------------------------------- POWER UP FUNCTIONS -----------------------------------------------------------------------
 
@@ -1121,7 +1121,7 @@ def scoreUp():
         scoreUpRepeatNum = gameCanvas.after(2000, lambda: updateCoords(0))
     else:
         scoreUpRepeatNum = gameCanvas.after(4000, lambda: updateCoords(0))
-    editInfoText("+40 Score")
+    editInfoText("+40 Score", 1000)
 
 
 def invincibility(invincibleFromMain):
@@ -1135,7 +1135,7 @@ def invincibility(invincibleFromMain):
             5000, disableInvincibility)
         updateInvincibilityText()
         if not beenHit:  # Only show "Invincible!" if they collected ability
-            editInfoText("Invincible!")
+            editInfoText("Invincible!", 1250)
     gameCanvas.itemconfigure(player, fill="#a1fc03")
     if not beenHit:  # Only hide ability if the invincibility didn't occur due to the player being hit
         # Move to top right to prevent extra collisions
@@ -1166,7 +1166,7 @@ def slowTime(slowFromMain):
         ySpeed = [speed/2 for speed in ySpeed]
         unslowRepeatNum = gameCanvas.after(5000, unslowTime)
         updateSlowText()
-        editInfoText("Time Slowed!")
+        editInfoText("Time Slowed!", 1250)
     # Move to top right to prevent extra collisions
     gameCanvas.coords(abilities[2], 0, 0)
     gameCanvas.itemconfigure(abilities[2], state="hidden")
@@ -1207,7 +1207,7 @@ def deleteBalls():
         window.update()
         sleep(0.25)
         gameCanvas.delete(tempBall)
-    editInfoText(str(deleteNum) + " Balls Deleted")
+    editInfoText(str(deleteNum) + " Balls Deleted", 1500)
 
 
 def updateInvincibilityText():
@@ -1260,16 +1260,17 @@ def updateSlowText():
         gameCanvas.itemconfigure(slowTextRectangle, fill="")
 
 
-def editInfoText(text):
+def editInfoText(text, time):
     '''Takes a parameter text and edits the info text correspondingly.'''
     global textBuffer
     if text != None:  # If this function was called by hideInfoText, don't add text to buffer
-        textBuffer.append(text)
+        textTime = [text, time]
+        textBuffer.append(textTime)
     # If there isn't any other text being displayed, display it
     if len(textBuffer) == 1 or text == None:
         gameCanvas.itemconfigure(
-            gameInfoText, text=textBuffer[0], state="normal")
-        gameCanvas.after(1250, hideInfoText)  # Hide the text afterwards
+            gameInfoText, text=textBuffer[0][0], state="normal")
+        gameCanvas.after(textBuffer[0][1], hideInfoText)  # Hide the text afterwards
 
 
 def hideInfoText():
@@ -1278,7 +1279,7 @@ def hideInfoText():
     gameCanvas.itemconfigure(gameInfoText, state="hidden")
     textBuffer.pop(0)
     if textBuffer != []:  # If there is more text to display
-        editInfoText(None)
+        editInfoText(None, None)
 
 
 # ---------------------------------------------- BALL FUNCTIONS -----------------------------------------------------------------------
@@ -1288,11 +1289,8 @@ def createBall(move):
     '''Creates a new ball and appends it to an array, along with its corresponding x and y speed and colour.'''
     # Create the ball but don't start moving it
     if not move:
-        side = randint(0, 3)  # Choose a side to spawn the ball at
-        if side == 0:  # Up
-            xPos = randint(50, 1870)
-            yPos = 10
-        elif side == 1:  # Down
+        side = randint(1, 3)  # Choose a side to spawn the ball at
+        if side == 1:  # Down
             xPos = randint(50, 1870)
             yPos = 1040
         elif side == 2:  # Left
@@ -1485,7 +1483,7 @@ def hit():
         # Give the player temporary invulnerability after being hit
         invincibility(True)
         gameCanvas.itemconfigure(livesTextRectangle, fill="#fc0390")
-        editInfoText(str(lives) + " lives remaining")
+        editInfoText(str(lives) + " lives remaining", 2000)
     if lives == 0:
         gameActive = False
 
