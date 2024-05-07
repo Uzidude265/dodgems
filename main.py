@@ -961,7 +961,7 @@ def gameLoop():
     # Main game loop
     gameActive = True
     while gameActive and not paused:
-        sleep(0.005)
+        sleep(0.01)
         gameCanvas.move(player, playerDirectionX, playerDirectionY)
         moveBalls()
         checkPlayerCollision()
@@ -1081,9 +1081,12 @@ def pause(event):
 def updateDifficulty():
     '''Updates the difficulty every 30 seconds to speed up the balls'''
     global difficulty
-    if time % 30 == 0 and difficulty < 3:
+    if time % 30 == 0 and difficulty < 5:
         difficulty += 1
-        editInfoText("Difficulty up!", 2000)  # Show the player that the difficulty went up
+        if difficulty < 5:
+            editInfoText("Difficulty up!", 2000)  # Show the player that the difficulty went up
+        else:
+            editInfoText("Final Difficulty!!", 2000)  # Show the player that the difficulty went up
 
 # ---------------------------------------------- POWER UP FUNCTIONS -----------------------------------------------------------------------
 
@@ -1317,18 +1320,26 @@ def createBall(move):
             if difficulty == 1:
                 speedValues = [1, 2]
             elif difficulty == 2:
-                speedValues = [1, 3]
+                speedValues = [1, 4]
+            elif difficulty == 3:
+                speedValues = [1, 6]
+            elif difficulty == 4:
+                speedValues = [2, 6]
             else:
-                speedValues = [1, 5]
-            colourBounds = [4, 3, 2]
+                speedValues = [3, 6]
+            colourBounds = [5, 4, 2]
         else:
             if difficulty == 1:
                 speedValues = [2, 4]
             elif difficulty == 2:
-                speedValues = [2, 6]
+                speedValues = [2, 8]
+            elif difficulty == 3:
+                speedValues = [2, 12]
+            elif difficulty == 4:
+                speedValues = [4, 12]
             else:
-                speedValues = [2, 10]
-            colourBounds = [8, 6, 4]
+                speedValues = [6, 12]
+            colourBounds = [10, 8, 4]
 
         # Generate speed and direction
         tempX = randint(speedValues[0], speedValues[1])
@@ -1389,27 +1400,27 @@ def upDirection(event):
     '''Change the player's direction to up.'''
     global playerDirectionX, playerDirectionY
     playerDirectionX = 0
-    playerDirectionY = -5
+    playerDirectionY = -7
 
 
 def downDirection(event):
     '''Change the player's direction to down.'''
     global playerDirectionX, playerDirectionY
     playerDirectionX = 0
-    playerDirectionY = 5
+    playerDirectionY = 7
 
 
 def leftDirection(event):
     '''Change the player's direction to left.'''
     global playerDirectionX, playerDirectionY
-    playerDirectionX = -5
+    playerDirectionX = -7
     playerDirectionY = 0
 
 
 def rightDirection(event):
     '''Change the player's direction to right.'''
     global playerDirectionX, playerDirectionY
-    playerDirectionX = 5
+    playerDirectionX = 7
     playerDirectionY = 0
 
 
