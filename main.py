@@ -601,11 +601,13 @@ def createLeaderboard():
     style.configure("Treeview.Heading", background="pink",
                     font=("Comic Sans MS", 20, "bold"))
     leaderboard = ttk.Treeview(leaderboardFrame, columns=(
-        "name", "time", "score"), show="headings")
+        "name", "time", "difficulty", "score"), show="headings")
     leaderboard.column("name", anchor="center")
     leaderboard.heading("name", text="Name:")
     leaderboard.column("time", anchor="center")
     leaderboard.heading("time", text="Time:")
+    leaderboard.column("difficulty", anchor="center")
+    leaderboard.heading("difficulty", text="Difficulty:")
     leaderboard.column("score", anchor="center")
     leaderboard.heading("score", text="Score:")
     populateLeaderboard()
@@ -618,9 +620,10 @@ def populateLeaderboard():
     rowNum = 0
     while tempName != "":  # Until end of file is reached
         tempTime = leaderboardFile.readline().strip()
+        tempDifficulty = leaderboardFile.readline().strip()
         tempScore = leaderboardFile.readline().strip()
         leaderboard.insert("", "end", iid=rowNum, values=(
-            tempName, tempTime, tempScore))
+            tempName, tempTime, tempDifficulty, tempScore))
         rowNum += 1
         tempName = leaderboardFile.readline().strip()
     leaderboardFile.close()
@@ -660,10 +663,10 @@ def addToLeaderboard():
             leaderboard.delete(line)
 
         # Repopulate leaderboard with new entry
-        newEntry = [name, str(time), str(score)]
+        newEntry = [name, str(time), str(difficulty), str(score)]
         placed = False
         for line in range(numOfEntries):
-            if score < int(treeviewData[line][2]):
+            if score < int(treeviewData[line][3]):
                 leaderboard.insert("", "end", iid=line,
                                    values=(treeviewData[line]))
             else:
@@ -1343,11 +1346,11 @@ def createBall(move):
             elif difficulty == 2:
                 speedValues = [1, 4]
             elif difficulty == 3:
-                speedValues = [1, 5]
-            elif difficulty == 4:
                 speedValues = [2, 5]
+            elif difficulty == 4:
+                speedValues = [3, 5]
             else:
-                speedValues = [2, 6]
+                speedValues = [3, 6]
             colourBounds = [5, 4, 2]
         else:
             if difficulty == 1:
@@ -1355,11 +1358,11 @@ def createBall(move):
             elif difficulty == 2:
                 speedValues = [2, 8]
             elif difficulty == 3:
-                speedValues = [2, 10]
-            elif difficulty == 4:
                 speedValues = [4, 10]
+            elif difficulty == 4:
+                speedValues = [6, 10]
             else:
-                speedValues = [4, 12]
+                speedValues = [6, 12]
             colourBounds = [10, 8, 4]
 
         # Generate speed and direction
