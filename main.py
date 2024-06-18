@@ -274,11 +274,11 @@ def initialiseMenu():
     global finalScoreLabel, nameInput, submitBtn
     gameOverLabel = Label(gameOverFrame, width=30, height=4, bg="pink", text="GAME OVER!", font=(
         "Comic Sans MS", 20, "bold"), borderwidth=3, relief="solid")
-    finalScoreLabel = Label(gameOverFrame, width=30, height=5, bg="pink", text="", font=(
+    finalScoreLabel = Label(gameOverFrame, width=30, height=6, bg="pink", text="", font=(
         "Comic Sans MS", 18, "bold"), borderwidth=3, relief="solid")
     nameInput = Entry(gameOverFrame, width=30, bg="#aeeafc", font=(
         "Comic Sans MS", 20, "bold"), justify="center")
-    submitBtn = Btn(gameOverFrame, width=25, height=1, text="Submit Name", bg="light blue",
+    submitBtn = Btn(gameOverFrame, width=25, height=1, text="Submit", bg="light blue",
                     activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=addToLeaderboard)
     gameOverHomeBtn = Btn(gameOverFrame, width=25, height=1, text="Home", bg="light blue",
                           activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda: swapFrames(0))
@@ -601,31 +601,34 @@ def createLeaderboard():
     style.configure("Treeview.Heading", background="pink",
                     font=("Comic Sans MS", 20, "bold"))
     leaderboard = ttk.Treeview(leaderboardFrame, columns=(
-        "name", "time", "difficulty", "score"), show="headings")
+        "rank", "name", "score", "time", "difficulty"), show="headings")
+    leaderboard.column("rank", anchor="center")
+    leaderboard.heading("rank", text="Rank:")
     leaderboard.column("name", anchor="center")
     leaderboard.heading("name", text="Name:")
+    leaderboard.column("score", anchor="center")
+    leaderboard.heading("score", text="Score:")
     leaderboard.column("time", anchor="center")
     leaderboard.heading("time", text="Time:")
     leaderboard.column("difficulty", anchor="center")
     leaderboard.heading("difficulty", text="Difficulty:")
-    leaderboard.column("score", anchor="center")
-    leaderboard.heading("score", text="Score:")
     populateLeaderboard()
 
 
 def populateLeaderboard():
     '''Reads the text file 'leaderboard.txt' and populates the leaderboard.'''
     leaderboardFile = open("leaderboard.txt", "r")
-    tempName = leaderboardFile.readline().strip()
+    tempRank = leaderboardFile.readline().strip()
     rowNum = 0
-    while tempName != "":  # Until end of file is reached
+    while tempRank != "":  # Until end of file is reached
+        tempName = leaderboardFile.readline().strip()
+        tempScore = leaderboardFile.readline().strip()
         tempTime = leaderboardFile.readline().strip()
         tempDifficulty = leaderboardFile.readline().strip()
-        tempScore = leaderboardFile.readline().strip()
         leaderboard.insert("", "end", iid=rowNum, values=(
-            tempName, tempTime, tempDifficulty, tempScore))
+            tempRank, tempName, tempScore, tempTime, tempDifficulty))
         rowNum += 1
-        tempName = leaderboardFile.readline().strip()
+        tempRank = leaderboardFile.readline().strip()
     leaderboardFile.close()
 
 
@@ -663,26 +666,33 @@ def addToLeaderboard():
             leaderboard.delete(line)
 
         # Repopulate leaderboard with new entry
-        newEntry = [name, str(time), str(difficulty), str(score)]
+        count = 1
         placed = False
         for line in range(numOfEntries):
-            if score < int(treeviewData[line][3]):
+            if score <= int(treeviewData[line][2]):
                 leaderboard.insert("", "end", iid=line,
                                    values=(treeviewData[line]))
             else:
                 if placed == False:
+                    newEntry = [count, name, str(score), str(time), str(difficulty)]
                     leaderboard.insert("", "end", iid=line, values=(newEntry))
                     placed = True
                 else:
+                    entry = treeviewData[line-1]
+                    entry[0] = str(count)  # Update the rank by one
                     leaderboard.insert("", "end", iid=line,
-                                       values=(treeviewData[line-1]))
+                                       values=(entry))
+            count += 1
 
         # Place final entry
         if placed == False:
+            newEntry = [count, name, str(score), str(time), str(difficulty)]
             leaderboard.insert("", "end", iid=numOfEntries, values=(newEntry))
         else:
+            entry = treeviewData[numOfEntries-1]
+            entry[0] = str(count )  # Update the rank by one
             leaderboard.insert("", "end", iid=numOfEntries,
-                               values=(treeviewData[numOfEntries-1]))
+                               values=(entry))
 
 
 def saveLeaderboard():
@@ -694,6 +704,21 @@ def saveLeaderboard():
             leaderboardFile.write(str(value)+"\n")
     leaderboardFile.close()
 
+def checkRanking(score):
+    '''Takes the player's score and returns the rank where they would be placed on the leaderboard.'''
+    rank = 1
+
+    for line in leaderboard.get_children():
+        row = leaderboard.item(line)["values"]
+
+        # If the player's score is greater than this row, that is their rank
+        if score > int(row[2]):
+            return rank
+        else:
+            rank += 1
+
+    # If they are last place
+    return rank
 
 # ---------------------------------------------- HOW TO PLAY FUNCTIONS -----------------------------------------------------------------------
 
@@ -982,7 +1007,7 @@ def gameLoop():
         global score
         score = int(score)
         finalScoreLabel.configure(text="You scored " + str(
-            score) + " points!\n\nEnter your name to save your score\nor exit to the menu")
+            score) + " points!\nYour rank is " + str(checkRanking(score)) + " on the leaderboard\n\nEnter your name to submit\nyour score to the leaderboard")
         # Stop after loop from randomizing abilities
         gameFrame.after_cancel(randomizeRepeatNum)
         gameFrame.after_cancel(timeRepeatNum)
