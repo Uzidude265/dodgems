@@ -1,3 +1,6 @@
 # Dodgems
 
-NOTE: There seems to be an issue with resolution not adjusting properly, as well as object movement relying on resolution.
+TODO:
+- Remove 'Boss Key'
+- Separate functions into different files
+- Utilise classes so that I don't need to use global variables
