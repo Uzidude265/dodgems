@@ -42,7 +42,7 @@ def initialiseMenu():
 
     # FRAMES
     global homeFrame, settingsFrame, leaderboardFrame, infoFrame, gameOverFrame, playerColourFrame, \
-        bgFrame, keybindsFrame, cheatsFrame, bossFrame, pauseFrame
+        bgFrame, keybindsFrame, cheatsFrame, pauseFrame
     homeFrame = Frame(window)
     settingsFrame = Frame(window)
     leaderboardFrame = Frame(window)
@@ -52,7 +52,6 @@ def initialiseMenu():
     bgFrame = Frame(window)
     keybindsFrame = Frame(window)
     cheatsFrame = Frame(window)
-    bossFrame = Frame(window)
     pauseFrame = Frame(window)
 
     # HOME FRAME WIDGETS
@@ -153,7 +152,7 @@ def initialiseMenu():
     bgSettingsBtn.pack(side="top", pady=(110, 0))
 
     # KEYBIND FRAME WIDGETS
-    global upBtn, downBtn, leftBtn, rightBtn, bossKeyBtn, keybindsSettingsBtn, keybindsPromptLabel
+    global upBtn, downBtn, leftBtn, rightBtn, keybindsSettingsBtn, keybindsPromptLabel
     # Remove the < > from the controls to add to the corresponding button's text
     tempUp = controls[0]
     tempUp = tempUp[1:len(tempUp)-1]
@@ -163,8 +162,6 @@ def initialiseMenu():
     tempLeft = tempLeft[1:len(tempLeft)-1]
     tempRight = controls[3]
     tempRight = tempRight[1:len(tempRight)-1]
-    tempBossKey = controls[4]
-    tempBossKey = tempBossKey[1:len(tempBossKey)-1]
     keybindsLabel = Label(keybindsFrame, width=30, height=4, bg="pink", text="CHANGE KEYBINDS", font=(
         "Comic Sans MS", 20, "bold"), borderwidth=3, relief="solid")
     keybindsPromptLabel = Label(keybindsFrame, width=50, height=2, bg="pink", text="Click a keybind to change", font=(
@@ -177,8 +174,6 @@ def initialiseMenu():
                   activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda: setKeybindChange(2))
     rightBtn = Btn(keybindsFrame, width=25, height=1, text="Right: " + tempRight, bg="light blue",
                    activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda: setKeybindChange(3))
-    bossKeyBtn = Btn(keybindsFrame, width=25, height=1, text="Boss Key: " + tempBossKey, bg="light blue",
-                     activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda: setKeybindChange(4))
     keybindsSettingsBtn = Btn(keybindsFrame, width=25, height=1, text="Back to Settings", bg="light blue",
                               activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=lambda: swapFrames(1))
 
@@ -189,7 +184,6 @@ def initialiseMenu():
     downBtn.pack(side="top", pady=(10, 0))
     leftBtn.pack(side="top", pady=(10, 0))
     rightBtn.pack(side="top", pady=(10, 0))
-    bossKeyBtn.pack(side="top", pady=(10, 0))
     keybindsSettingsBtn.pack(side="top", pady=(50, 0))
 
     # CHEATS FRAME WIDGETS
@@ -290,12 +284,6 @@ def initialiseMenu():
     submitBtn.pack(side="top", pady=(70, 0))
     gameOverHomeBtn.pack(side="top", pady=(20, 0))
 
-    # BOSS KEY FRAME WIDGETS AND PACKING
-    global bossImage
-    bossImage = Image(file="BossKeyImage.png")
-    bossKeyImage = Label(bossFrame, image=bossImage)
-    bossKeyImage.pack(fill="both", expand=True)
-
 
 def swapFrames(frameNum):
     '''Swaps to a frame according to the given button press.'''
@@ -351,61 +339,6 @@ def swapFrames(frameNum):
         playerColourFrame.pack(fill="both", expand=True)
 
 
-def bossKey(event):
-    '''Activates whenever the boss key is pressed and displays an unsuspecting image.'''
-    global gameActive, bossEnabled, paused, pauseFrameActive, randomizeRepeatNum, \
-        scoreUpRepeatNum, timeRepeatNum, scoreTimeRepeatNum
-    # If at menu, place boss frame on top
-    if gameActive == False:
-        if bossEnabled == True:
-            bossEnabled = False
-            bossFrame.place_forget()
-        else:
-            bossEnabled = True
-            bossFrame.place(x=0, y=0)
-
-    # If game active, pause the game and hide gameFrame
-    elif gameActive == True and pauseFrameActive == False:
-        if bossEnabled == True:
-            bossEnabled = False
-            paused = False
-            bossFrame.pack_forget()
-            gameFrame.pack(fill="both", expand=True)
-            window.bind("<Escape>", pause)
-            gameLoop()  # Re-run game loop after unpausing
-        else:
-            bossEnabled = True
-            paused = True
-            gameFrame.pack_forget()
-            bossFrame.pack(fill="both", expand=True)
-            # Stop after loops
-            gameFrame.after_cancel(randomizeRepeatNum)
-            gameFrame.after_cancel(timeRepeatNum)
-            gameFrame.after_cancel(scoreTimeRepeatNum)
-            if scoreUpRepeatNum != 0:
-                gameFrame.after_cancel(scoreUpRepeatNum)
-            if slowed:
-                gameFrame.after_cancel(slowTextRepeatNum)
-                gameFrame.after_cancel(unslowRepeatNum)
-            if invincible:
-                gameFrame.after_cancel(invincibilityTextRepeatNum)
-                gameFrame.after_cancel(disableInvincibilityRepeatNum)
-            window.unbind("<Escape>")
-
-    # Else if the pause frame is showing, replace with boss frame
-    elif pauseFrameActive == True:
-        if bossEnabled == True:
-            bossEnabled = False
-            bossFrame.place_forget()
-            pauseFrame.pack(fill="both", expand=True)
-            window.bind("<Escape>", pause)
-        else:
-            bossEnabled = True
-            pauseFrame.pack_forget()
-            bossFrame.place(x=0, y=0)
-            window.unbind("<Escape>")
-
-
 def exitGame():
     '''Save all settings and current leaderboard state, then close the game.'''
     answer = messagebox.askquestion(
@@ -423,7 +356,7 @@ def initialiseSettings():
     '''Initialise all the settings and read settings.txt file to get saved settings.'''
     # Initialise unsaved settings
     global triggeredKeybindChange, keybindNum, controls, bgColour, playerColour, previousBind, \
-        howToPlayText, cheatCode, cheats, bossEnabled, gameActive, paused, pauseFrameActive, slowed, invincible
+        howToPlayText, cheatCode, cheats, gameActive, paused, pauseFrameActive, slowed, invincible
     triggeredKeybindChange = False  # Checks if player clicked button to change keybind
     keybindNum = 0
     previousBind = ""  # Used when unbinding previous key
@@ -437,10 +370,8 @@ def initialiseSettings():
         + "\n\nP.S. Touching the walls is an instakill!\n\nGood Luck!"
     cheatCode = ""  # Keeps track of keys pressed to check if they enter a cheat code
     cheats = [False, False, False]  # Checks what cheats are enabled
-    bossEnabled = False
     gameActive = False
     paused = False
-    pauseFrameActive = False  # Used by bossKey to check if the pause frame is showing
     slowed = False
     invincible = False
 
@@ -497,7 +428,6 @@ def initialiseKeybinds():
     window.bind(controls[1], downDirection)
     window.bind(controls[2], leftDirection)
     window.bind(controls[3], rightDirection)
-    window.bind(controls[4], bossKey)
     window.bind("<BackSpace>", cancelCheatCode)
     window.bind("<Escape>", pause)
     window.bind("<Key>", updateKeybind)
@@ -552,12 +482,9 @@ def updateKeybind(event):
         elif keybindNum == 2:
             leftBtn.configure(text="Left: " + tempText)
             window.bind(controls[keybindNum], leftDirection)
-        elif keybindNum == 3:
+        else:
             rightBtn.configure(text="Right: " + tempText)
             window.bind(controls[keybindNum], rightDirection)
-        else:
-            bossKeyBtn.configure(text="Boss Key: " + tempText)
-            window.bind(controls[keybindNum], bossKey)
 
 
 def defaultSettings():
@@ -572,7 +499,6 @@ def defaultSettings():
     downBtn.configure(text="Down: Down")
     leftBtn.configure(text="Left: Left")
     rightBtn.configure(text="Right: Right")
-    bossKeyBtn.configure(text="Boss Key: Control_L")
     changeBackground(bgColour)
     playerColour = "light blue"
 
@@ -930,7 +856,6 @@ def countdown():
     gameFrame.itemconfigure(countdownText, state="hidden")
     gameFrame.itemconfigure(countdownTextRectangle, state="hidden")
     window.bind("<Escape>", pause)
-    window.bind(controls[4], bossKey)
 
 
 def gameLoop():
