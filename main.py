@@ -380,7 +380,7 @@ def initialiseSettings():
     bgColour = ""
     playerColour = ""
     settings = open("settings.txt", "r")
-    for setting in range(5):
+    for setting in range(4):
         setting = settings.readline().strip()
         controls.append(setting)
     bgColour = settings.readline().strip()
@@ -493,7 +493,7 @@ def defaultSettings():
     bgColour = "#8ec8fa"
     for control in controls:
         window.unbind(control)
-    controls = ["<Up>", "<Down>", "<Left>", "<Right>", "<Control_L>"]
+    controls = ["<Up>", "<Down>", "<Left>", "<Right>"]
     initialiseKeybinds()  # Need to bind the keys again
     upBtn.configure(text="Up: Up")
     downBtn.configure(text="Down: Down")
@@ -843,7 +843,6 @@ def countdown():
     '''Short countdown before the game starts'''
     global countdownText, countdownTextRectangle
     window.unbind("<Escape>")
-    window.unbind(controls[4])
     gameFrame.itemconfigure(countdownText, state="normal")
     gameFrame.itemconfigure(countdownTextRectangle, state="normal")
     for i in range(3, 0, -1):
@@ -1067,9 +1066,19 @@ def updateDifficulty(increase):
 
 def randomizeAbility():
     '''Chooses a random ability to put on the screen, or update its position if still on the screen.'''
-    global randomizeRepeatNum, previousAbility, abilityNum
-    while abilityNum == previousAbility:  # New ability cannot be the same as the last one
+    global randomizeRepeatNum, previousAbility, abilityNum, abilities, gameFrame
+    availableAbilities = []
+
+    for i in range(1, 4):
+        if gameFrame.itemcget(abilities[i], 'state') == 'hidden' and i != previousAbility:
+            availableAbilities.append(i)
+    
+    # If all abilities are on screen, choose a random one to move, or choose from the hidden ones
+    if availableAbilities == []:
         abilityNum = randint(1, 3)
+    else:
+        abilityNum = availableAbilities[randint(0, len(availableAbilities)-1)]
+
     previousAbility = abilityNum
     updateCoords(abilityNum)
     if cheats[2] == True:  # Half ability cool down if that cheat is on
