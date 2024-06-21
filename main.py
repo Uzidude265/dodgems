@@ -1069,13 +1069,23 @@ def randomizeAbility():
     global randomizeRepeatNum, previousAbility, abilityNum, abilities, gameFrame
     availableAbilities = []
 
+    # Only add the ability if it is hidden and it wasn't the last ability
     for i in range(1, 4):
         if gameFrame.itemcget(abilities[i], 'state') == 'hidden' and i != previousAbility:
-            availableAbilities.append(i)
+            # The delete balls ability only available after difficulty 2
+            if i == 3:
+                if difficulty >= 2:
+                    availableAbilities.append(i)
+            else:
+                availableAbilities.append(i)
     
     # If all abilities are on screen, choose a random one to move, or choose from the hidden ones
     if availableAbilities == []:
-        abilityNum = randint(1, 3)
+        choices = [1,2,3]
+        del choices[i-1]
+        abilityNum = choices[randint(0, 1)]
+    elif len(availableAbilities) == 1:
+        abilityNum = availableAbilities[0]
     else:
         abilityNum = availableAbilities[randint(0, len(availableAbilities)-1)]
 
