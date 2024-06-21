@@ -1097,9 +1097,9 @@ def updateCoords(abilityNum):
 
 
 def scoreUp():
-    '''Increases the score by 40 after the scoreUp power-up is collected.'''
+    '''Increases the score by 50 after the scoreUp power-up is collected.'''
     global score, abilities, scoreUpRepeatNum
-    score += 40
+    score += 50
     gameFrame.itemconfigure(abilities[0], state="hidden")
     # Move to top right to prevent extra collisions
     gameFrame.coords(abilities[0], 0, 0)
@@ -1107,7 +1107,7 @@ def scoreUp():
         scoreUpRepeatNum = gameFrame.after(2000, lambda: updateCoords(0))
     else:
         scoreUpRepeatNum = gameFrame.after(4000, lambda: updateCoords(0))
-    editInfoText("+40 Score", 1000)
+    editInfoText("+50 Score", 1000)
 
 
 def invincibility(invincibleFromMain):
