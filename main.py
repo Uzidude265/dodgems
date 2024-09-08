@@ -735,7 +735,7 @@ def initialiseGame(loaded):
         for ball in ballPos:
             balls.append(gameFrame.create_oval(
                 ball[0], ball[1], ball[2], ball[3], fill=ball[4], width=2))
-    playerDirectionX = 5
+    playerDirectionX = 7
     playerDirectionY = 0
     saved = False
     textBuffer = []  # When multiple events occur, display them one at a time
@@ -771,6 +771,8 @@ def initialiseGame(loaded):
     player = gameFrame.create_rectangle(
         playerCoords, fill=playerColour, outline="black", width=2)
     beenHit = False
+
+    # TODO ADD warpedPlayer for when crossing a boundary
 
     # Create and Modify Hearts
     global heart, heartBroken, heart1, heart2, heart3
@@ -920,8 +922,8 @@ def gameLoop():
     # Main game loop
     gameActive = True
     while gameActive and not paused:
-        sleep(0.01)
-        gameFrame.move(player, playerDirectionX, playerDirectionY)
+        sleep(0.01)  # TODO Play around with time and speed of balls/player to reduce lag
+        gameFrame.move(player, playerDirectionX, playerDirectionY)  # TODO Create movePlayer function to do this AND move warpedPlayer
         moveBalls()
         checkPlayerCollision()
         window.update()
@@ -1310,7 +1312,7 @@ def createBall(move):
         # Determine the speed based on the difficulty
         global slowed, difficulty
         if slowed == True:
-            if difficulty == 1:
+            if difficulty == 1:  # TODO Play around with time and speed of balls/player to reduce lag
                 speedValues = [1, 2]
             elif difficulty == 2:
                 speedValues = [1, 4]
@@ -1388,7 +1390,7 @@ def moveBalls():
 
 # ---------------------------------------------- PLAYER FUNCTIONS ----------------------------------------------------
 
-
+# TODO Play around with time and speed of balls/player to reduce lag
 def upDirection(event):
     '''Change the player's direction to up.'''
     global playerDirectionX, playerDirectionY
@@ -1417,6 +1419,12 @@ def rightDirection(event):
     playerDirectionY = 0
 
 
+# TODO Create this function
+def movePlayer():
+    '''Moves the player, and handles any logic to do with moving across boundaries'''
+    pass
+
+
 def checkPlayerCollision():
     '''Checks if the player is touching a ball, the wall or any abilities.'''
     # Check collision with wall
@@ -1424,6 +1432,8 @@ def checkPlayerCollision():
     pos = gameFrame.coords(player)
     if pos[3] > 1080 or pos[1] < 0 or pos[2] > 1920 or pos[0] < 0:
         gameActive = False
+
+    # TODO Remove wall collision check, and add collision checks for warpedPlayer if it exists
 
     # Check collision with all abilities
     scoreUpCollision(pos)
