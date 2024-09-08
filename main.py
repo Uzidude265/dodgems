@@ -1201,7 +1201,7 @@ def deleteBalls():
         gameFrame.coords(
             tempBall, tempCoords[0]-20, tempCoords[1]-20, tempCoords[2]+20, tempCoords[3]+20)
         window.update()
-        sleep(0.25)
+        sleep(0.33)
         gameFrame.delete(tempBall)
     editInfoText(str(deleteNum) + " Balls Deleted", 1500)
 
