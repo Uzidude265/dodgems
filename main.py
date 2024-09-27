@@ -1138,6 +1138,7 @@ def invincibility(invincibleFromMain):
         if not beenHit:  # Only show "Invincible!" if they collected ability
             editInfoText("Invincible!", 1250)
     gameFrame.itemconfigure(player, fill="#a1fc03")
+    gameFrame.itemconfigure(warpedPlayer, fill="#a1fc03")
     if beenHit:  # Only hide ability if the invincibility didn't occur due to the player being hit
         beenHit = False
 
@@ -1147,6 +1148,7 @@ def disableInvincibility():
     global invincible, invincibilityCount
     invincible = False
     gameFrame.itemconfigure(player, fill=playerColour)
+    gameFrame.itemconfigure(warpedPlayer, fill=playerColour)
     invincibilityCount -= 1
     if invincibilityCount != 0:  # If they collected more than 1 invincible ability, give it them again
         invincibility(False)
@@ -1559,38 +1561,52 @@ def hit():
 def hitAnimation(repeat):
     '''The animation that is played whenever the player is hit.'''
     tempCoords = gameFrame.coords(player)
+    warpedTempCoords = gameFrame.coords(warpedPlayer)
     if repeat == True:
         gameFrame.coords(
             player, tempCoords[0]+10, tempCoords[1]+10, tempCoords[2]-10, tempCoords[3]-10)
+        gameFrame.coords(
+            warpedPlayer, warpedTempCoords[0]+10, warpedTempCoords[1]+10, warpedTempCoords[2]-10, warpedTempCoords[3]-10)
         gameFrame.itemconfigure(player, fill="red")
+        gameFrame.itemconfigure(warpedPlayer, fill="red")
         window.update()
         sleep(0.4)
         hitAnimation(False)
     else:
         gameFrame.coords(
             player, tempCoords[0]-10, tempCoords[1]-10, tempCoords[2]+10, tempCoords[3]+10)
+        gameFrame.coords(
+            warpedPlayer, warpedTempCoords[0]-10, warpedTempCoords[1]-10, warpedTempCoords[2]+10, warpedTempCoords[3]+10)
         window.update()
         sleep(0.4)
         gameFrame.itemconfigure(player, fill=playerColour)
+        gameFrame.itemconfigure(warpedPlayer, fill=playerColour)
 
 
 def deathAnimation():
     '''When the player dies, shrink the player.'''
     tempCoords = gameFrame.coords(player)
+    warpedTempCoords = gameFrame.coords(warpedPlayer)
     gameFrame.itemconfigure(player, fill="red")
+    gameFrame.itemconfigure(warpedPlayer, fill="red")
     for shrink in range(5):
         for coordinate in range(4):
             if coordinate <= 1:
                 if cheats[0] == True:
                     tempCoords[coordinate] += 2
+                    warpedTempCoords[coordinate] += 2
                 else:
                     tempCoords[coordinate] += 5
+                    warpedTempCoords[coordinate] += 5
             else:
                 if cheats[0] == True:
                     tempCoords[coordinate] -= 2
+                    warpedTempCoords[coordinate] -= 2
                 else:
                     tempCoords[coordinate] -= 5
+                    warpedTempCoords[coordinate] -= 5
         gameFrame.coords(player, tempCoords)
+        gameFrame.coords(warpedPlayer, warpedTempCoords)
         window.update()
         sleep(0.3)
 
