@@ -764,15 +764,15 @@ def initialiseGame(loaded):
             gameFrame.itemconfigure(abilities[ability], state="normal")
 
     # Create player
-    global player, playerColour, beenHit
+    global player, warpedPlayer, playerColour, beenHit
     if cheats[0] == True:  # If smaller player cheat is enabled, make smaller player
         playerCoords = (
             playerCoords[0]+15, playerCoords[1]+15, playerCoords[2]-15, playerCoords[3]-15)
     player = gameFrame.create_rectangle(
         playerCoords, fill=playerColour, outline="black", width=2)
+    warpedPlayer = gameFrame.create_rectangle(
+        playerCoords, fill=playerColour, outline="black", width=2, state="hidden")
     beenHit = False
-
-    # TODO ADD warpedPlayer for when crossing a boundary
 
     # Create and Modify Hearts
     global heart, heartBroken, heart1, heart2, heart3
@@ -923,7 +923,7 @@ def gameLoop():
     gameActive = True
     while gameActive and not paused:
         sleep(0.01)  # TODO Play around with time and speed of balls/player to reduce lag
-        gameFrame.move(player, playerDirectionX, playerDirectionY)  # TODO Create movePlayer function to do this AND move warpedPlayer
+        movePlayer()
         moveBalls()
         checkPlayerCollision()
         window.update()
@@ -1419,43 +1419,78 @@ def rightDirection(event):
     playerDirectionY = 0
 
 
-# TODO Create this function
 def movePlayer():
     '''Moves the player, and handles any logic to do with moving across boundaries'''
-    pass
+    gameFrame.move(player, playerDirectionX, playerDirectionY)
+
+    mainPlayerPos = gameFrame.coords(player)
+    warpedPlayerPos = gameFrame.coords(warpedPlayer)
+
+    # Check if main player is off screen on all 4 sides
+    if mainPlayerPos[0] < 0:  # Left
+        distanceOffScreen = 0 - mainPlayerPos[0]
+        newX1Coord = 1920 - distanceOffScreen
+        gameFrame.coords(warpedPlayer, newX1Coord, mainPlayerPos[1], newX1Coord+50, mainPlayerPos[3])
+        gameFrame.itemconfig(warpedPlayer, state="normal")
+    elif mainPlayerPos[1] < 0:  # Up
+        distanceOffScreen = 0 - mainPlayerPos[1]
+        newY1Coord = 1080 - distanceOffScreen
+        gameFrame.coords(warpedPlayer, mainPlayerPos[0], newY1Coord, mainPlayerPos[2], newY1Coord+50)
+        gameFrame.itemconfig(warpedPlayer, state="normal")
+    elif mainPlayerPos[2] > 1920:  # Right
+        distanceOffScreen = mainPlayerPos[2] - 1920
+        newX2Coord = 0 + distanceOffScreen
+        gameFrame.coords(warpedPlayer, newX2Coord-50, mainPlayerPos[1], newX2Coord, mainPlayerPos[3])
+        gameFrame.itemconfig(warpedPlayer, state="normal")
+    elif mainPlayerPos[3] > 1080:  # Down
+        distanceOffScreen = mainPlayerPos[3] - 1080
+        newY2Coord = 0 + distanceOffScreen
+        gameFrame.coords(warpedPlayer, mainPlayerPos[0], newY2Coord-50, mainPlayerPos[2], newY2Coord)
+        gameFrame.itemconfig(warpedPlayer, state="normal")
+
+    # If warped player is entirely on screen and visible, replace this with main player
+    if (warpedPlayerPos[3] <= 1080 and warpedPlayerPos[1] >= 0 and warpedPlayerPos[2] <= 1920 and warpedPlayerPos[0] >= 0 and gameFrame.itemcget(warpedPlayer, "state") == "normal") \
+        and (mainPlayerPos[1] > 1080 or mainPlayerPos[3] < 0 or mainPlayerPos[0] > 1920 or mainPlayerPos[2] < 0):
+        gameFrame.coords(player, warpedPlayerPos)
+        gameFrame.itemconfig(warpedPlayer, state="hidden")
+    # Hide warped player if player is entirely on screen
+    elif mainPlayerPos[3] <= 1080 and mainPlayerPos[1] >= 0 and mainPlayerPos[2] <= 1920 and mainPlayerPos[0] >= 0:
+        gameFrame.itemconfig(warpedPlayer, state="hidden")
 
 
 def checkPlayerCollision():
     '''Checks if the player is touching a ball, the wall or any abilities.'''
     # Check collision with wall
     global gameActive, cheats, abilities, lives
-    pos = gameFrame.coords(player)
-    if pos[3] > 1080 or pos[1] < 0 or pos[2] > 1920 or pos[0] < 0:
-        gameActive = False
+    positions = []
+    positions.append(gameFrame.coords(player))
+    if gameFrame.itemcget(warpedPlayer, "state") == "normal":
+        positions.append(gameFrame.coords(warpedPlayer))
 
-    # TODO Remove wall collision check, and add collision checks for warpedPlayer if it exists
+    for pos in positions:
 
-    # Check collision with all abilities
-    scoreUpCollision(pos)
-    invincibleCollision(pos)
-    slowTimeCollision(pos)
-    deleteBallsCollision(pos)
+        # Check collision with all abilities
+        scoreUpCollision(pos)
+        invincibleCollision(pos)
+        slowTimeCollision(pos)
+        deleteBallsCollision(pos)
 
-    # Only check if player has collided with any ball if invincibility is disabled
-    if cheats[1] != True and invincible != True:
-        for i in range(len(balls)):
-            pos2 = gameFrame.coords(balls[i])
-            if pos[0] < pos2[2] and pos[2] > pos2[0] and pos[1] < pos2[3] and pos[3] > pos2[1] \
-                    or pos[0] > pos2[2] and pos[2] < pos2[0] and pos[1] > pos2[3] and pos[3] < pos2[1]:
-                hit()
+        # Only check if player has collided with any ball if invincibility is disabled
+        if cheats[1] != True and invincible != True:
+            for i in range(len(balls)):
+                pos2 = gameFrame.coords(balls[i])
+                if pos[0] < pos2[2] and pos[2] > pos2[0] and pos[1] < pos2[3] and pos[3] > pos2[1] \
+                        or pos[0] > pos2[2] and pos[2] < pos2[0] and pos[1] > pos2[3] and pos[3] < pos2[1]:
+                    hit()
 
 
 def scoreUpCollision(pos):
     '''Takes the players position as argument and checks if they collided with the scoreUp ability'''
     pos2 = gameFrame.coords(abilities[0])
     pos2 = [pos2[0]-20, pos2[1]-25, pos2[0]+20, pos2[1]+25]
-    if pos[0] < pos2[2] and pos[2] > pos2[0] and pos[1] < pos2[3] and pos[3] > pos2[1] \
-            or pos[0] > pos2[2] and pos[2] < pos2[0] and pos[1] > pos2[3] and pos[3] < pos2[1]:
+    if (pos[0] < pos2[2] and pos[2] > pos2[0] and pos[1] < pos2[3] and pos[3] > pos2[1] \
+        or pos[0] > pos2[2] and pos[2] < pos2[0] and pos[1] > pos2[3] and pos[3] < pos2[1]) \
+        and gameFrame.itemcget(abilities[0], "state") == "normal":
         scoreUp()
 
 
@@ -1463,8 +1498,9 @@ def invincibleCollision(pos):
     '''Takes the players position as argument and checks if they collided with the invincible ability'''
     pos2 = gameFrame.coords(abilities[1])
     pos2 = [pos2[0]-20, pos2[1]-20, pos2[0]+20, pos2[1]+20]
-    if pos[0] < pos2[2] and pos[2] > pos2[0] and pos[1] < pos2[3] and pos[3] > pos2[1] \
-            or pos[0] > pos2[2] and pos[2] < pos2[0] and pos[1] > pos2[3] and pos[3] < pos2[1]:
+    if (pos[0] < pos2[2] and pos[2] > pos2[0] and pos[1] < pos2[3] and pos[3] > pos2[1] \
+        or pos[0] > pos2[2] and pos[2] < pos2[0] and pos[1] > pos2[3] and pos[3] < pos2[1]) \
+        and gameFrame.itemcget(abilities[1], "state") == "normal":
         invincibility(True)
 
 
@@ -1472,8 +1508,9 @@ def slowTimeCollision(pos):
     '''Takes the players position as argument and checks if they collided with the slow time ability'''
     pos2 = gameFrame.coords(abilities[2])
     pos2 = [pos2[0]-20, pos2[1]-20, pos2[0]+20, pos2[1]+20]
-    if pos[0] < pos2[2] and pos[2] > pos2[0] and pos[1] < pos2[3] and pos[3] > pos2[1] \
-            or pos[0] > pos2[2] and pos[2] < pos2[0] and pos[1] > pos2[3] and pos[3] < pos2[1]:
+    if (pos[0] < pos2[2] and pos[2] > pos2[0] and pos[1] < pos2[3] and pos[3] > pos2[1] \
+        or pos[0] > pos2[2] and pos[2] < pos2[0] and pos[1] > pos2[3] and pos[3] < pos2[1]) \
+        and gameFrame.itemcget(abilities[2], "state") == "normal":
         slowTime(True)
 
 
@@ -1481,8 +1518,9 @@ def deleteBallsCollision(pos):
     '''Takes the players position as argument and checks if they collided with the delete balls ability'''
     pos2 = gameFrame.coords(abilities[3])
     pos2 = [pos2[0]-20, pos2[1]-20, pos2[0]+20, pos2[1]+20]
-    if pos[0] < pos2[2] and pos[2] > pos2[0] and pos[1] < pos2[3] and pos[3] > pos2[1] \
-            or pos[0] > pos2[2] and pos[2] < pos2[0] and pos[1] > pos2[3] and pos[3] < pos2[1]:
+    if (pos[0] < pos2[2] and pos[2] > pos2[0] and pos[1] < pos2[3] and pos[3] > pos2[1] \
+        or pos[0] > pos2[2] and pos[2] < pos2[0] and pos[1] > pos2[3] and pos[3] < pos2[1]) \
+        and gameFrame.itemcget(abilities[0], "state") == "normal":
         deleteBalls()
 
 
