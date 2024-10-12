@@ -710,7 +710,7 @@ def initialiseGame(loaded):
     # Create all of the variables needed
     global time, score, numBalls, balls, xSpeed, ySpeed, playerDirectionX, playerDirectionY, \
         saved, textBuffer, playerCoords, ballPos, cheated, lives, ballTextCount, slowed, slowTextCount, \
-        slowCount, invincible, invincibilityTextCount, invincibilityCount, abilityCoords, difficulty
+        slowCount, invincible, invincibilityTextCount, invincibilityCount, difficulty
     if loaded == False:  # Only use default numbers if game wasn't loaded from save file
         time = 0
         score = 0
@@ -728,7 +728,6 @@ def initialiseGame(loaded):
         invincible = False
         invincibilityTextCount = 0
         invincibilityCount = 0  # Stores how many invincible power ups they have collected
-        abilityCoords = [(0, 0) for x in range(4)]
         difficulty = 1
     else:
         balls = []
@@ -746,33 +745,20 @@ def initialiseGame(loaded):
     ghost = Image(file="Ghost.png")
     clock = Image(file="Clock.png")
     delete = Image(file="DeleteSymbol.png")
-    abilities = []
-    abilities.append(gameFrame.create_image(
-        abilityCoords[0], image=upArrow, state="hidden"))  # scoreUp ability
-    abilities.append(gameFrame.create_image(
-        abilityCoords[1], image=ghost, state="hidden"))  # invincibility ability
-    abilities.append(gameFrame.create_image(
-        abilityCoords[2], image=clock, state="hidden"))  # slow time ability
-    abilities.append(gameFrame.create_image(
-        abilityCoords[3], image=delete, state="hidden"))  # delete balls ability
+    abilities = [None, None, None, None]
     abilityNum = 0
     previousAbility = 0
 
-    # Unhide any abilities that were showing if loaded from save
-    for ability in range(4):
-        if gameFrame.coords(abilities[ability]) != [0, 0]:
-            gameFrame.itemconfigure(abilities[ability], state="normal")
-
     # Create player
-    global player, playerColour, beenHit
+    global player, warpedPlayer, playerColour, beenHit
     if cheats[0] == True:  # If smaller player cheat is enabled, make smaller player
         playerCoords = (
             playerCoords[0]+15, playerCoords[1]+15, playerCoords[2]-15, playerCoords[3]-15)
     player = gameFrame.create_rectangle(
         playerCoords, fill=playerColour, outline="black", width=2)
+    warpedPlayer = gameFrame.create_rectangle(
+        playerCoords, fill=playerColour, outline="black", width=2, state="hidden")
     beenHit = False
-
-    # TODO ADD warpedPlayer for when crossing a boundary
 
     # Create and Modify Hearts
     global heart, heartBroken, heart1, heart2, heart3
@@ -883,11 +869,11 @@ def gameLoop():
     timeRepeatNum = gameFrame.after(1000, timer)
     scoreTimeRepeatNum = gameFrame.after(250, increaseScore)
     # Only start after function to spawn in scoreUp ability if it isn't already displayed
-    if gameFrame.coords(abilities[0]) == [0, 0]:
+    if not abilities[0]:
         if cheats[2] == True:
-            scoreUpRepeatNum = gameFrame.after(2000, lambda: updateCoords(0))
+            scoreUpRepeatNum = gameFrame.after(2000, lambda: createAbility(0))
         else:
-            scoreUpRepeatNum = gameFrame.after(4000, lambda: updateCoords(0))
+            scoreUpRepeatNum = gameFrame.after(4000, lambda: createAbility(0))
     else:
         scoreUpRepeatNum = 0
 
@@ -923,7 +909,7 @@ def gameLoop():
     gameActive = True
     while gameActive and not paused:
         sleep(0.01)  # TODO Play around with time and speed of balls/player to reduce lag
-        gameFrame.move(player, playerDirectionX, playerDirectionY)  # TODO Create movePlayer function to do this AND move warpedPlayer
+        movePlayer()
         moveBalls()
         checkPlayerCollision()
         window.update()
@@ -1073,7 +1059,7 @@ def randomizeAbility():
 
     # Only add the ability if it is hidden and it wasn't the last ability
     for i in range(1, 4):
-        if gameFrame.itemcget(abilities[i], 'state') == 'hidden' and i != previousAbility:
+        if not abilities[i] and i != previousAbility:
             # The delete balls ability only available after difficulty 2
             if i == 3:
                 if difficulty >= 2:
@@ -1086,39 +1072,56 @@ def randomizeAbility():
         choices = [1,2,3]
         del choices[i-1]
         abilityNum = choices[randint(0, 1)]
+        updateAbilityCoords(abilityNum)
     elif len(availableAbilities) == 1:
         abilityNum = availableAbilities[0]
+        createAbility(abilityNum)
     else:
         abilityNum = availableAbilities[randint(0, len(availableAbilities)-1)]
+        createAbility(abilityNum)
 
     previousAbility = abilityNum
-    updateCoords(abilityNum)
     if cheats[2] == True:  # Half ability cool down if that cheat is on
         randomizeRepeatNum = gameFrame.after(6000, randomizeAbility)
     else:
         randomizeRepeatNum = gameFrame.after(12000, randomizeAbility)
 
 
-def updateCoords(abilityNum):
-    '''Updates the coordinates of a given ability.'''
+def updateAbilityCoords(abilityNum):
+    '''Updates the coordinates of an ability'''
     global abilities
     xPos = randint(100, 1790)
     yPos = randint(100, 950)
+    if not abilities[abilityNum]:
+        createAbility(abilityNum)
     gameFrame.coords(abilities[abilityNum], xPos, yPos)
-    gameFrame.itemconfigure(abilities[abilityNum], state="normal")
+
+def createAbility(abilityNum):
+    '''Creates new ability.'''
+    global abilities, upArrow, ghost, clock, delete
+    xPos = randint(100, 1790)
+    yPos = randint(100, 950)
+    image = None
+    match abilityNum:
+        case 0:
+            image = upArrow
+        case 1:
+            image = ghost
+        case 2:
+            image = clock
+        case 3:
+            image = delete
+    abilities[abilityNum] = gameFrame.create_image(xPos, yPos, image=image)
 
 
 def scoreUp():
     '''Increases the score by 50 after the scoreUp power-up is collected.'''
     global score, abilities, scoreUpRepeatNum
     score += 50
-    gameFrame.itemconfigure(abilities[0], state="hidden")
-    # Move to top right to prevent extra collisions
-    gameFrame.coords(abilities[0], 0, 0)
     if cheats[2] == True:  # Half ability cool down if that cheat is on
-        scoreUpRepeatNum = gameFrame.after(2000, lambda: updateCoords(0))
+        scoreUpRepeatNum = gameFrame.after(2000, lambda: createAbility(0))
     else:
-        scoreUpRepeatNum = gameFrame.after(4000, lambda: updateCoords(0))
+        scoreUpRepeatNum = gameFrame.after(4000, lambda: createAbility(0))
     editInfoText("+50 Score", 1000)
 
 
@@ -1135,11 +1138,8 @@ def invincibility(invincibleFromMain):
         if not beenHit:  # Only show "Invincible!" if they collected ability
             editInfoText("Invincible!", 1250)
     gameFrame.itemconfigure(player, fill="#a1fc03")
-    if not beenHit:  # Only hide ability if the invincibility didn't occur due to the player being hit
-        # Move to top right to prevent extra collisions
-        gameFrame.coords(abilities[1], 0, 0)
-        gameFrame.itemconfigure(abilities[1], state="hidden")
-    else:
+    gameFrame.itemconfigure(warpedPlayer, fill="#a1fc03")
+    if beenHit:  # Only hide ability if the invincibility didn't occur due to the player being hit
         beenHit = False
 
 
@@ -1148,6 +1148,7 @@ def disableInvincibility():
     global invincible, invincibilityCount
     invincible = False
     gameFrame.itemconfigure(player, fill=playerColour)
+    gameFrame.itemconfigure(warpedPlayer, fill=playerColour)
     invincibilityCount -= 1
     if invincibilityCount != 0:  # If they collected more than 1 invincible ability, give it them again
         invincibility(False)
@@ -1165,9 +1166,6 @@ def slowTime(slowFromMain):
         unslowRepeatNum = gameFrame.after(5000, unslowTime)
         updateSlowText()
         editInfoText("Time Slowed!", 1250)
-    # Move to top right to prevent extra collisions
-    gameFrame.coords(abilities[2], 0, 0)
-    gameFrame.itemconfigure(abilities[2], state="hidden")
 
 
 def unslowTime():
@@ -1183,9 +1181,6 @@ def unslowTime():
 
 def deleteBalls():
     '''Deletes 3 balls randomly after collecting the delete balls ability.'''
-    gameFrame.itemconfigure(abilities[3], state="hidden")
-    # Move to top right to prevent extra collisions
-    gameFrame.coords(abilities[3], 0, 0)
     global balls, numBalls, xSpeed, ySpeed
     if numBalls <= 2:  # If there are less than 3 balls on the screen, get rid of them all
         deleteNum = numBalls
@@ -1419,70 +1414,131 @@ def rightDirection(event):
     playerDirectionY = 0
 
 
-# TODO Create this function
 def movePlayer():
     '''Moves the player, and handles any logic to do with moving across boundaries'''
-    pass
+    gameFrame.move(player, playerDirectionX, playerDirectionY)
+
+    mainPlayerPos = gameFrame.coords(player)
+    warpedPlayerPos = gameFrame.coords(warpedPlayer)
+
+    # Check if main player is off screen on all 4 sides
+    if mainPlayerPos[0] < 0:  # Left
+        distanceOffScreen = 0 - mainPlayerPos[0]
+        newX1Coord = 1920 - distanceOffScreen
+        gameFrame.coords(warpedPlayer, newX1Coord, mainPlayerPos[1], newX1Coord+50, mainPlayerPos[3])
+        gameFrame.itemconfig(warpedPlayer, state="normal")
+    elif mainPlayerPos[1] < 0:  # Up
+        distanceOffScreen = 0 - mainPlayerPos[1]
+        newY1Coord = 1080 - distanceOffScreen
+        gameFrame.coords(warpedPlayer, mainPlayerPos[0], newY1Coord, mainPlayerPos[2], newY1Coord+50)
+        gameFrame.itemconfig(warpedPlayer, state="normal")
+    elif mainPlayerPos[2] > 1920:  # Right
+        distanceOffScreen = mainPlayerPos[2] - 1920
+        newX2Coord = 0 + distanceOffScreen
+        gameFrame.coords(warpedPlayer, newX2Coord-50, mainPlayerPos[1], newX2Coord, mainPlayerPos[3])
+        gameFrame.itemconfig(warpedPlayer, state="normal")
+    elif mainPlayerPos[3] > 1080:  # Down
+        distanceOffScreen = mainPlayerPos[3] - 1080
+        newY2Coord = 0 + distanceOffScreen
+        gameFrame.coords(warpedPlayer, mainPlayerPos[0], newY2Coord-50, mainPlayerPos[2], newY2Coord)
+        gameFrame.itemconfig(warpedPlayer, state="normal")
+
+    # If warped player is entirely on screen and visible, replace this with main player
+    if (warpedPlayerPos[3] <= 1080 and warpedPlayerPos[1] >= 0 and warpedPlayerPos[2] <= 1920 and warpedPlayerPos[0] >= 0 and gameFrame.itemcget(warpedPlayer, "state") == "normal") \
+        and (mainPlayerPos[1] > 1080 or mainPlayerPos[3] < 0 or mainPlayerPos[0] > 1920 or mainPlayerPos[2] < 0):
+        gameFrame.coords(player, warpedPlayerPos)
+        gameFrame.itemconfig(warpedPlayer, state="hidden")
+    # Hide warped player if player is entirely on screen
+    elif mainPlayerPos[3] <= 1080 and mainPlayerPos[1] >= 0 and mainPlayerPos[2] <= 1920 and mainPlayerPos[0] >= 0:
+        gameFrame.itemconfig(warpedPlayer, state="hidden")
 
 
 def checkPlayerCollision():
     '''Checks if the player is touching a ball, the wall or any abilities.'''
     # Check collision with wall
     global gameActive, cheats, abilities, lives
-    pos = gameFrame.coords(player)
-    if pos[3] > 1080 or pos[1] < 0 or pos[2] > 1920 or pos[0] < 0:
-        gameActive = False
+    positions = []
+    positions.append(gameFrame.coords(player))
+    if gameFrame.itemcget(warpedPlayer, "state") == "normal":
+        positions.append(gameFrame.coords(warpedPlayer))
 
-    # TODO Remove wall collision check, and add collision checks for warpedPlayer if it exists
+    for pos in positions:
 
-    # Check collision with all abilities
-    scoreUpCollision(pos)
-    invincibleCollision(pos)
-    slowTimeCollision(pos)
-    deleteBallsCollision(pos)
+        # Check collision with all abilities
+        scoreUpCollision(pos)
+        invincibleCollision(pos)
+        slowTimeCollision(pos)
+        deleteBallsCollision(pos)
 
-    # Only check if player has collided with any ball if invincibility is disabled
-    if cheats[1] != True and invincible != True:
-        for i in range(len(balls)):
-            pos2 = gameFrame.coords(balls[i])
-            if pos[0] < pos2[2] and pos[2] > pos2[0] and pos[1] < pos2[3] and pos[3] > pos2[1] \
-                    or pos[0] > pos2[2] and pos[2] < pos2[0] and pos[1] > pos2[3] and pos[3] < pos2[1]:
-                hit()
+        # Only check if player has collided with any ball if invincibility is disabled
+        if cheats[1] != True and invincible != True:
+            for i in range(len(balls)):
+                pos2 = gameFrame.coords(balls[i])
+                if pos[0] < pos2[2] and pos[2] > pos2[0] and pos[1] < pos2[3] and pos[3] > pos2[1] \
+                        or pos[0] > pos2[2] and pos[2] < pos2[0] and pos[1] > pos2[3] and pos[3] < pos2[1]:
+                    hit()
 
 
 def scoreUpCollision(pos):
     '''Takes the players position as argument and checks if they collided with the scoreUp ability'''
+    global abilities
+    # Don't check if ability doesn't exist
+    if not abilities[0]:
+        return
     pos2 = gameFrame.coords(abilities[0])
+    if not pos2:
+        return
     pos2 = [pos2[0]-20, pos2[1]-25, pos2[0]+20, pos2[1]+25]
     if pos[0] < pos2[2] and pos[2] > pos2[0] and pos[1] < pos2[3] and pos[3] > pos2[1] \
-            or pos[0] > pos2[2] and pos[2] < pos2[0] and pos[1] > pos2[3] and pos[3] < pos2[1]:
+        or pos[0] > pos2[2] and pos[2] < pos2[0] and pos[1] > pos2[3] and pos[3] < pos2[1]:
+        gameFrame.delete(abilities[0])
+        abilities[0] = None
         scoreUp()
 
 
 def invincibleCollision(pos):
     '''Takes the players position as argument and checks if they collided with the invincible ability'''
+    # Don't check if ability doesn't exist
+    if not abilities[1]:
+        return
     pos2 = gameFrame.coords(abilities[1])
+    if not pos2:
+        return
     pos2 = [pos2[0]-20, pos2[1]-20, pos2[0]+20, pos2[1]+20]
     if pos[0] < pos2[2] and pos[2] > pos2[0] and pos[1] < pos2[3] and pos[3] > pos2[1] \
-            or pos[0] > pos2[2] and pos[2] < pos2[0] and pos[1] > pos2[3] and pos[3] < pos2[1]:
+        or pos[0] > pos2[2] and pos[2] < pos2[0] and pos[1] > pos2[3] and pos[3] < pos2[1]:
+        gameFrame.delete(abilities[1])
+        abilities[1] = None
         invincibility(True)
 
 
 def slowTimeCollision(pos):
     '''Takes the players position as argument and checks if they collided with the slow time ability'''
+    # Don't check if ability doesn't exist
+    if not abilities[2]:
+        return
     pos2 = gameFrame.coords(abilities[2])
+    if not pos2:
+        return
     pos2 = [pos2[0]-20, pos2[1]-20, pos2[0]+20, pos2[1]+20]
     if pos[0] < pos2[2] and pos[2] > pos2[0] and pos[1] < pos2[3] and pos[3] > pos2[1] \
-            or pos[0] > pos2[2] and pos[2] < pos2[0] and pos[1] > pos2[3] and pos[3] < pos2[1]:
+        or pos[0] > pos2[2] and pos[2] < pos2[0] and pos[1] > pos2[3] and pos[3] < pos2[1]:
+        gameFrame.delete(abilities[2])
+        abilities[2] = None
         slowTime(True)
 
 
 def deleteBallsCollision(pos):
     '''Takes the players position as argument and checks if they collided with the delete balls ability'''
+    # Don't check if ability doesn't exist
+    if not abilities[3]:
+        return
     pos2 = gameFrame.coords(abilities[3])
     pos2 = [pos2[0]-20, pos2[1]-20, pos2[0]+20, pos2[1]+20]
     if pos[0] < pos2[2] and pos[2] > pos2[0] and pos[1] < pos2[3] and pos[3] > pos2[1] \
-            or pos[0] > pos2[2] and pos[2] < pos2[0] and pos[1] > pos2[3] and pos[3] < pos2[1]:
+        or pos[0] > pos2[2] and pos[2] < pos2[0] and pos[1] > pos2[3] and pos[3] < pos2[1]:
+        gameFrame.delete(abilities[3])
+        abilities[3] = None
         deleteBalls()
 
 
@@ -1505,38 +1561,52 @@ def hit():
 def hitAnimation(repeat):
     '''The animation that is played whenever the player is hit.'''
     tempCoords = gameFrame.coords(player)
+    warpedTempCoords = gameFrame.coords(warpedPlayer)
     if repeat == True:
         gameFrame.coords(
             player, tempCoords[0]+10, tempCoords[1]+10, tempCoords[2]-10, tempCoords[3]-10)
+        gameFrame.coords(
+            warpedPlayer, warpedTempCoords[0]+10, warpedTempCoords[1]+10, warpedTempCoords[2]-10, warpedTempCoords[3]-10)
         gameFrame.itemconfigure(player, fill="red")
+        gameFrame.itemconfigure(warpedPlayer, fill="red")
         window.update()
         sleep(0.4)
         hitAnimation(False)
     else:
         gameFrame.coords(
             player, tempCoords[0]-10, tempCoords[1]-10, tempCoords[2]+10, tempCoords[3]+10)
+        gameFrame.coords(
+            warpedPlayer, warpedTempCoords[0]-10, warpedTempCoords[1]-10, warpedTempCoords[2]+10, warpedTempCoords[3]+10)
         window.update()
         sleep(0.4)
         gameFrame.itemconfigure(player, fill=playerColour)
+        gameFrame.itemconfigure(warpedPlayer, fill=playerColour)
 
 
 def deathAnimation():
     '''When the player dies, shrink the player.'''
     tempCoords = gameFrame.coords(player)
+    warpedTempCoords = gameFrame.coords(warpedPlayer)
     gameFrame.itemconfigure(player, fill="red")
+    gameFrame.itemconfigure(warpedPlayer, fill="red")
     for shrink in range(5):
         for coordinate in range(4):
             if coordinate <= 1:
                 if cheats[0] == True:
                     tempCoords[coordinate] += 2
+                    warpedTempCoords[coordinate] += 2
                 else:
                     tempCoords[coordinate] += 5
+                    warpedTempCoords[coordinate] += 5
             else:
                 if cheats[0] == True:
                     tempCoords[coordinate] -= 2
+                    warpedTempCoords[coordinate] -= 2
                 else:
                     tempCoords[coordinate] -= 5
+                    warpedTempCoords[coordinate] -= 5
         gameFrame.coords(player, tempCoords)
+        gameFrame.coords(warpedPlayer, warpedTempCoords)
         window.update()
         sleep(0.3)
 
@@ -1640,7 +1710,7 @@ def loadGame():
     else:
         global saveExists, loaded, time, score, numBalls, lives, ballTextCount, \
             slowed, slowTextCount, slowCount, invincible, invincibilityTextCount, \
-            invincibilityCount, playerCoords, abilityCoords, ballPos, xSpeed, ySpeed, cheated
+            invincibilityCount, playerCoords, ballPos, xSpeed, ySpeed, cheated
         saveExists = False
         loaded = True
         time = int(temp)
@@ -1663,7 +1733,6 @@ def loadGame():
         invincibilityTextCount = int(saveFile.readline().strip())
         invincibilityCount = int(saveFile.readline().strip())
         playerCoords = []
-        abilityCoords = []
         ballPos = []
         xSpeed = []
         ySpeed = []
@@ -1680,8 +1749,6 @@ def loadGame():
             for coordinate in range(2):
                 coordinate = saveFile.readline().strip()
                 tempCoords.append(coordinate)
-            abilityCoords.append(
-                (tempCoords[0], tempCoords[1]))
 
         # Load ball information
         for variable in range(3):
