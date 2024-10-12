@@ -59,7 +59,7 @@ def initialiseMenu():
     logo = Image(file="Dodgems.png")
     homeLabel = Label(homeFrame, image=logo, highlightthickness=10)
     playBtn = Btn(homeFrame, width=25, height=1, text="Play", bg="light blue", activebackground="cyan", font=(
-        "Comic Sans MS", 15, "bold"), command=lambda: initialiseGame(False))
+        "Comic Sans MS", 15, "bold"), command=lambda event: initialiseGame(event, loaded=False))
     loadBtn = Btn(homeFrame, width=25, height=1, text="Load Game", bg="light blue",
                   activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=loadGame)
     settingsBtn = Btn(homeFrame, width=25, height=1, text="Settings", bg="light blue",
@@ -285,7 +285,7 @@ def initialiseMenu():
     gameOverHomeBtn.pack(side="top", pady=(20, 0))
 
 
-def swapFrames(frameNum):
+def swapFrames(frameNum, event=None):
     '''Swaps to a frame according to the given button press.'''
     if frameNum == 0:  # Swap to the home frame
         global paused, gameActive
@@ -298,6 +298,10 @@ def swapFrames(frameNum):
         nameInput.delete(0, "end")  # Get rid of text in entry box
         # Disable entry box after going back home
         nameInput.configure(state="disabled")
+        window.unbind("<Return>")  # Unbind the submit/enter button and escape
+        window.bind("<Return>", lambda event: initialiseGame(event, loaded=False))
+        window.unbind("<Escape>")
+        print("Escape unbinded for home screen")
         paused = False
         gameActive = False
         if slowed:  # Pause any remaining after loops
@@ -331,6 +335,8 @@ def swapFrames(frameNum):
         submitBtn.configure(bg="light blue", relief="raised",
                             command=addToLeaderboard)  # Reset submit button
         nameInput.configure(state="normal")  # Re-enable entry box
+        window.bind("<Return>", addToLeaderboard)
+        window.bind("<Escape>", lambda event: swapFrames(0, event))
     elif frameNum == 7:  # Swap to the cheats frame
         settingsFrame.pack_forget()
         cheatsFrame.pack(fill="both", expand=True)
@@ -429,8 +435,8 @@ def initialiseKeybinds():
     window.bind(controls[2], leftDirection)
     window.bind(controls[3], rightDirection)
     window.bind("<BackSpace>", cancelCheatCode)
-    window.bind("<Escape>", pause)
     window.bind("<Key>", updateKeybind)
+    window.bind("<Return>", lambda event: initialiseGame(event, loaded=False))
 
 
 def setKeybindChange(tempNum):
@@ -558,9 +564,10 @@ def populateLeaderboard():
     leaderboardFile.close()
 
 
-def addToLeaderboard():
+def addToLeaderboard(event=None):
     '''Take user input and add it to the leaderboard.'''
     global cheats, cheated
+    print("Attempting to add to leaderboard")
     for cheat in cheats:
         if cheat:
             cheated = True
@@ -700,12 +707,13 @@ def changeCheats(cheatNum):
 # ---------------------------------------------- GAME FUNCTIONS -----------------------------------------------------------------------
 
 
-def initialiseGame(loaded):
+def initialiseGame(event, loaded):
     '''Sets up all of the variables and conditions in order to play the game, then starts the game loop.'''
     homeFrame.pack_forget()
     global gameFrame
     gameFrame = Canvas(window, width=1920, height=1080, bg=bgColour)
     gameFrame.pack(fill="both", expand=True)
+    window.unbind("<Return>") # Unbind start button
 
     # Create all of the variables needed
     global time, score, numBalls, balls, xSpeed, ySpeed, playerDirectionX, playerDirectionY, \
@@ -830,7 +838,6 @@ def initialiseGame(loaded):
 def countdown():
     '''Short countdown before the game starts'''
     global countdownText, countdownTextRectangle
-    window.unbind("<Escape>")
     gameFrame.itemconfigure(countdownText, state="normal")
     gameFrame.itemconfigure(countdownTextRectangle, state="normal")
     for i in range(3, 0, -1):
@@ -933,8 +940,11 @@ def gameLoop():
             gameFrame.after_cancel(invincibilityTextRepeatNum)
             gameFrame.after_cancel(disableInvincibilityRepeatNum)
         window.configure(cursor="")  # Re-enable cursor
+        window.unbind("<Escape>")  # Get rid of pause function
+        print("Escape unbinded for game over")
         deathAnimation()
         swapFrames(6)  # Game Over screen
+        print("Swapped to game over screen")
 
 
 def timer():
@@ -1771,7 +1781,7 @@ def loadGame():
             cheated = False
         saveFile.close()
         open("save.txt", "w").close()  # Erase the save
-        initialiseGame(True)
+        initialiseGame(None, True)
 
 
 # ---------------------------------------------- MAIN PROGRAM --------------------------------------------------------
