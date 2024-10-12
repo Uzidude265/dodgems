@@ -59,7 +59,7 @@ def initialiseMenu():
     logo = Image(file="Dodgems.png")
     homeLabel = Label(homeFrame, image=logo, highlightthickness=10)
     playBtn = Btn(homeFrame, width=25, height=1, text="Play", bg="light blue", activebackground="cyan", font=(
-        "Comic Sans MS", 15, "bold"), command=lambda event: initialiseGame(event, loaded=False))
+        "Comic Sans MS", 15, "bold"), command=lambda: initialiseGame(False))
     loadBtn = Btn(homeFrame, width=25, height=1, text="Load Game", bg="light blue",
                   activebackground="cyan", font=("Comic Sans MS", 15, "bold"), command=loadGame)
     settingsBtn = Btn(homeFrame, width=25, height=1, text="Settings", bg="light blue",
@@ -299,7 +299,7 @@ def swapFrames(frameNum, event=None):
         # Disable entry box after going back home
         nameInput.configure(state="disabled")
         window.unbind("<Return>")  # Unbind the submit/enter button and escape
-        window.bind("<Return>", lambda event: initialiseGame(event, loaded=False))
+        window.bind("<Return>", lambda event: initialiseGame(False, event))
         window.unbind("<Escape>")
         print("Escape unbinded for home screen")
         paused = False
@@ -335,6 +335,7 @@ def swapFrames(frameNum, event=None):
         submitBtn.configure(bg="light blue", relief="raised",
                             command=addToLeaderboard)  # Reset submit button
         nameInput.configure(state="normal")  # Re-enable entry box
+        nameInput.focus_set()
         window.bind("<Return>", addToLeaderboard)
         window.bind("<Escape>", lambda event: swapFrames(0, event))
     elif frameNum == 7:  # Swap to the cheats frame
@@ -436,7 +437,7 @@ def initialiseKeybinds():
     window.bind(controls[3], rightDirection)
     window.bind("<BackSpace>", cancelCheatCode)
     window.bind("<Key>", updateKeybind)
-    window.bind("<Return>", lambda event: initialiseGame(event, loaded=False))
+    window.bind("<Return>", lambda event: initialiseGame(False, event))
 
 
 def setKeybindChange(tempNum):
@@ -707,7 +708,7 @@ def changeCheats(cheatNum):
 # ---------------------------------------------- GAME FUNCTIONS -----------------------------------------------------------------------
 
 
-def initialiseGame(event, loaded):
+def initialiseGame(loaded, event=None):
     '''Sets up all of the variables and conditions in order to play the game, then starts the game loop.'''
     homeFrame.pack_forget()
     global gameFrame
@@ -1781,7 +1782,7 @@ def loadGame():
             cheated = False
         saveFile.close()
         open("save.txt", "w").close()  # Erase the save
-        initialiseGame(None, True)
+        initialiseGame(True)
 
 
 # ---------------------------------------------- MAIN PROGRAM --------------------------------------------------------
